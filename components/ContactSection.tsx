@@ -1,4 +1,5 @@
 import FadeUp from "./FadeUp";
+import LeadForm from "./LeadForm";
 import TrackedContactLink from "./TrackedContactLink";
 
 export default function ContactSection() {
@@ -9,6 +10,11 @@ export default function ContactSection() {
         Hubungi tim marketing kami untuk konsultasi gratis dan temukan properti
         yang tepat untuk langkah berikutnya.
       </p>
+
+      <div className="max-w-3xl mx-auto mb-8">
+        <LeadForm source="Homepage" />
+      </div>
+
       <div className="contact-buttons">
         <TrackedContactLink
           href="mailto:nusantaraindahproperty@gmail.com"

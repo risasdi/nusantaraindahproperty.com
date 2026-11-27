@@ -15,3 +15,33 @@ export function formatRupiah(value: number): string {
   const formatted = formatThousands(Math.abs(rounded));
   return `${isNegative ? "-" : ""}Rp ${formatted}`;
 }
+
+const MONTHS_ID = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "Mei",
+  "Jun",
+  "Jul",
+  "Agu",
+  "Sep",
+  "Okt",
+  "Nov",
+  "Des",
+] as const;
+
+export function formatDateTimeWIB(isoString: string): string {
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return "-";
+
+  // Shift deterministically to WIB (UTC+7) so SSR and client output match identically
+  const wib = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+  const day = String(wib.getUTCDate()).padStart(2, "0");
+  const month = MONTHS_ID[wib.getUTCMonth()];
+  const year = wib.getUTCFullYear();
+  const hours = String(wib.getUTCHours()).padStart(2, "0");
+  const minutes = String(wib.getUTCMinutes()).padStart(2, "0");
+
+  return `${day} ${month} ${year}, ${hours}:${minutes}`;
+}

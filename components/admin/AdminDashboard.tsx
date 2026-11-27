@@ -48,6 +48,11 @@ function slugify(value: string): string {
     .replace(/-+/g, "-");
 }
 
+function extractArea(location: string): string {
+  const firstSegment = location.split(",")[0]?.trim() ?? "";
+  return firstSegment;
+}
+
 function formatCompactPrice(amount: number): string {
   if (amount >= 1_000_000_000) {
     const val = (amount / 1_000_000_000).toFixed(amount % 1_000_000_000 === 0 ? 0 : 1);
@@ -134,6 +139,7 @@ export default function AdminDashboard({
   const [properties, setProperties] = useState<DbProperty[]>(initialProperties);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [areaFilter, setAreaFilter] = useState<string>("all");
   const [togglingFeaturedId, setTogglingFeaturedId] = useState<string | null>(
     null
   );
@@ -490,6 +496,15 @@ export default function AdminDashboard({
         ? formatCompactPrice(minPrice)
         : `${formatCompactPrice(minPrice)} – ${formatCompactPrice(maxPrice)}`;
 
+  // Dynamic area options (text before the first comma in location)
+  const areaOptions = Array.from(
+    new Set(
+      properties
+        .map((p) => extractArea(p.location))
+        .filter((area) => area.length > 0)
+    )
+  ).sort((a, b) => a.localeCompare(b, "id"));
+
   // Table filtering
   const normalizedQuery = searchQuery.trim().toLowerCase();
   const filteredProperties = properties.filter((p) => {
@@ -500,6 +515,10 @@ export default function AdminDashboard({
       (statusFilter === "sold" && isSold) ||
       (statusFilter === "featured" && Boolean(p.is_featured));
 
+    const propertyArea = extractArea(p.location).toLowerCase();
+    const matchesArea =
+      areaFilter === "all" || propertyArea === areaFilter.toLowerCase();
+
     const matchesSearch =
       !normalizedQuery ||
       p.title.toLowerCase().includes(normalizedQuery) ||
@@ -507,7 +526,7 @@ export default function AdminDashboard({
       p.slug.toLowerCase().includes(normalizedQuery) ||
       (p.type ?? "").toLowerCase().includes(normalizedQuery);
 
-    return matchesStatus && matchesSearch;
+    return matchesStatus && matchesArea && matchesSearch;
   });
 
   return (
@@ -669,6 +688,21 @@ export default function AdminDashboard({
               </option>
               <option value="sold">Terjual ({soldCount})</option>
               <option value="featured">Unggulan ({featuredCount})</option>
+            </select>
+
+            {/* Area Filter */}
+            <select
+              aria-label="Filter area properti"
+              value={areaFilter}
+              onChange={(e) => setAreaFilter(e.target.value)}
+              className="h-10 px-3.5 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-700 focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15 transition"
+            >
+              <option value="all">Semua Area</option>
+              {areaOptions.map((area) => (
+                <option key={area} value={area}>
+                  {area}
+                </option>
+              ))}
             </select>
           </div>
         </div>

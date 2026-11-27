@@ -1,5 +1,6 @@
 import Link from "next/link";
 import FadeUp from "./FadeUp";
+import LeadForm from "./LeadForm";
 import PropertyGallery from "./PropertyGallery";
 import PropertyViewTracker from "./PropertyViewTracker";
 import type { PropertyItem } from "@/data/properties";
@@ -83,6 +84,14 @@ export default function PropertyDetailView({
               </ul>
             </div>
           </div>
+        </FadeUp>
+
+        <FadeUp className="mt-12">
+          <LeadForm
+            propertyId={property.id}
+            propertyTitle={property.name}
+            source="Detail Properti"
+          />
         </FadeUp>
       </main>
     </div>

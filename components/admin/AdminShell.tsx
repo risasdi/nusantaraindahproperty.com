@@ -56,7 +56,7 @@ const SIDEBAR_ITEMS = [
     label: "Leads & Pesan",
     href: "/admin/leads",
     icon: MessageSquareIcon,
-    badge: "Segera",
+    badge: null,
   },
   {
     label: "Pengaturan",
