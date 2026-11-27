@@ -1,10 +1,24 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { SettingsIcon } from "@/components/admin/AdminIcons";
+import AdminSettingsDashboard, {
+  type SiteSettingsData,
+  type TeamMemberRow,
+} from "@/components/admin/AdminSettingsDashboard";
 import { getCurrentAdminProfile } from "@/lib/admin-auth";
 import { getRolePermissions } from "@/lib/rbac";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
+
+const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
+  id: 1,
+  company_name: "Nusantara Indah Property",
+  whatsapp_number: "6285121186505",
+  office_address: "Bandung, Jawa Barat",
+  operating_hours: "Senin - Minggu, 08.00 - 17.00 WIB",
+  kpr_interest_rate: 5.5,
+  instagram_url: "https://www.instagram.com/nusantaraindahproperty",
+  tiktok_url: "https://www.tiktok.com/@nusantaraindahproperty",
+};
 
 export default async function AdminSettingsPage() {
   const profile = await getCurrentAdminProfile();
@@ -22,30 +36,48 @@ export default async function AdminSettingsPage() {
     redirect("/admin");
   }
 
+  const supabase = await createClient();
+
+  const [usersRes, settingsRes] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id, email, full_name, role, is_active, created_at")
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("site_settings")
+      .select("*")
+      .eq("id", 1)
+      .maybeSingle(),
+  ]);
+
+  const rawSettings = settingsRes.data as Partial<SiteSettingsData> | null;
+  const initialSettings: SiteSettingsData = {
+    id: 1,
+    company_name:
+      rawSettings?.company_name ?? DEFAULT_SITE_SETTINGS.company_name,
+    whatsapp_number:
+      rawSettings?.whatsapp_number ?? DEFAULT_SITE_SETTINGS.whatsapp_number,
+    office_address:
+      rawSettings?.office_address ?? DEFAULT_SITE_SETTINGS.office_address,
+    operating_hours:
+      rawSettings?.operating_hours ?? DEFAULT_SITE_SETTINGS.operating_hours,
+    kpr_interest_rate:
+      rawSettings?.kpr_interest_rate !== undefined &&
+      rawSettings?.kpr_interest_rate !== null
+        ? Number(rawSettings.kpr_interest_rate)
+        : DEFAULT_SITE_SETTINGS.kpr_interest_rate,
+    instagram_url:
+      rawSettings?.instagram_url ?? DEFAULT_SITE_SETTINGS.instagram_url,
+    tiktok_url: rawSettings?.tiktok_url ?? DEFAULT_SITE_SETTINGS.tiktok_url,
+  };
+
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-8 sm:p-12 text-center max-w-2xl mx-auto">
-      <div className="w-14 h-14 rounded-2xl bg-[#063D36]/10 text-[#063D36] flex items-center justify-center mx-auto">
-        <SettingsIcon className="w-7 h-7" />
-      </div>
-      <span className="inline-block mt-5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#C8A15A]/15 text-[#9A722B]">
-        Segera Hadir
-      </span>
-      <h2 className="text-2xl font-serif font-bold text-[#063D36] mt-3">
-        Pengaturan Website &amp; Akun
-      </h2>
-      <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-        Halaman pengaturan profil perusahaan, nomor WhatsApp marketing, info
-        suku bunga KPR, dan manajemen pengguna admin akan segera tersedia di
-        sini.
-      </p>
-      <div className="mt-6">
-        <Link
-          href="/admin"
-          className="inline-flex items-center px-5 py-2.5 rounded-xl bg-[#063D36] text-white text-sm font-semibold hover:bg-[#052e29] transition"
-        >
-          Kembali ke Overview
-        </Link>
-      </div>
-    </div>
+    <AdminSettingsDashboard
+      currentUserId={profile.id}
+      initialUsers={(usersRes.data as TeamMemberRow[] | null) ?? []}
+      initialUsersError={usersRes.error?.message ?? null}
+      initialSettings={initialSettings}
+      initialSettingsError={settingsRes.error?.message ?? null}
+    />
   );
 }

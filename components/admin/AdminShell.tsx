@@ -84,7 +84,7 @@ const SIDEBAR_ITEMS = [
     label: "Pengaturan",
     href: "/admin/settings",
     icon: SettingsIcon,
-    badge: "Segera",
+    badge: null,
     requiresSettingsAccess: true,
   },
 ] as const;
