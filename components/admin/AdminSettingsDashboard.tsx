@@ -631,7 +631,7 @@ export default function AdminSettingsDashboard({
 
       {/* TAB 2: PENGATURAN WEBSITE */}
       {activeTab === "website" && (
-        <div className="space-y-4 max-w-3xl">
+        <div className="space-y-4 w-full">
           {settingsFeedback && (
             <div
               role="status"
@@ -657,10 +657,6 @@ export default function AdminSettingsDashboard({
               <h2 className="text-lg font-serif font-bold text-[#063D36]">
                 Informasi &amp; Pengaturan Website
               </h2>
-              <p className="text-xs text-slate-500 mt-1">
-                Data disimpan pada tabel <code>public.site_settings</code> (ID
-                1).
-              </p>
             </div>
 
             <form
@@ -784,7 +780,7 @@ export default function AdminSettingsDashboard({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label
                     htmlFor="setting-instagram"
