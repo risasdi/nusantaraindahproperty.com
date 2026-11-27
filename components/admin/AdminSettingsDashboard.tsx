@@ -36,6 +36,7 @@ export interface SiteSettingsData {
   kpr_interest_rate: number;
   instagram_url: string;
   tiktok_url: string;
+  facebook_url: string;
 }
 
 interface AdminSettingsDashboardProps {
@@ -118,6 +119,7 @@ export default function AdminSettingsDashboard({
     kpr_interest_rate: String(initialSettings.kpr_interest_rate),
     instagram_url: initialSettings.instagram_url,
     tiktok_url: initialSettings.tiktok_url,
+    facebook_url: initialSettings.facebook_url,
   });
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsFeedback, setSettingsFeedback] = useState<{
@@ -333,6 +335,7 @@ export default function AdminSettingsDashboard({
           kpr_interest_rate: parsedRate,
           instagram_url: siteForm.instagram_url.trim(),
           tiktok_url: siteForm.tiktok_url.trim(),
+          facebook_url: siteForm.facebook_url.trim(),
           updated_at: new Date().toISOString(),
         },
         { onConflict: "id" }
@@ -781,7 +784,7 @@ export default function AdminSettingsDashboard({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label
                     htmlFor="setting-instagram"
@@ -792,7 +795,7 @@ export default function AdminSettingsDashboard({
                   <input
                     id="setting-instagram"
                     type="url"
-                    placeholder="https://www.instagram.com/nusantaraindahproperty"
+                    placeholder="https://www.instagram.com/..."
                     value={siteForm.instagram_url}
                     onChange={(e) =>
                       setSiteForm((prev) => ({
@@ -814,12 +817,34 @@ export default function AdminSettingsDashboard({
                   <input
                     id="setting-tiktok"
                     type="url"
-                    placeholder="https://www.tiktok.com/@nusantaraindahproperty"
+                    placeholder="https://www.tiktok.com/@..."
                     value={siteForm.tiktok_url}
                     onChange={(e) =>
                       setSiteForm((prev) => ({
                         ...prev,
                         tiktok_url: e.target.value,
+                      }))
+                    }
+                    className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="setting-facebook"
+                    className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5"
+                  >
+                    Link Facebook
+                  </label>
+                  <input
+                    id="setting-facebook"
+                    type="url"
+                    placeholder="https://www.facebook.com/..."
+                    value={siteForm.facebook_url}
+                    onChange={(e) =>
+                      setSiteForm((prev) => ({
+                        ...prev,
+                        facebook_url: e.target.value,
                       }))
                     }
                     className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15"

@@ -57,8 +57,19 @@ export default async function AdminSettingsPage() {
         ? Number(rawSettings.kpr_interest_rate)
         : DEFAULT_SITE_SETTINGS.kpr_interest_rate,
     instagram_url:
-      rawSettings?.instagram_url ?? DEFAULT_SITE_SETTINGS.instagram_url,
-    tiktok_url: rawSettings?.tiktok_url ?? DEFAULT_SITE_SETTINGS.tiktok_url,
+      rawSettings?.instagram_url !== undefined &&
+      rawSettings?.instagram_url !== null
+        ? rawSettings.instagram_url
+        : DEFAULT_SITE_SETTINGS.instagram_url,
+    tiktok_url:
+      rawSettings?.tiktok_url !== undefined && rawSettings?.tiktok_url !== null
+        ? rawSettings.tiktok_url
+        : DEFAULT_SITE_SETTINGS.tiktok_url,
+    facebook_url:
+      rawSettings?.facebook_url !== undefined &&
+      rawSettings?.facebook_url !== null
+        ? rawSettings.facebook_url
+        : DEFAULT_SITE_SETTINGS.facebook_url,
   };
 
   return (

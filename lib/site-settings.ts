@@ -10,6 +10,7 @@ export interface SiteSettings {
   kpr_interest_rate: number;
   instagram_url: string;
   tiktok_url: string;
+  facebook_url: string;
 }
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
@@ -21,6 +22,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   kpr_interest_rate: 5.5,
   instagram_url: "https://www.instagram.com/nusantaraindahproperty",
   tiktok_url: "https://www.tiktok.com/@nusantaraindahproperty",
+  facebook_url: "https://www.facebook.com/share/1FEMa37atR/?mibextid=wwXIfr",
 };
 
 export function normalizeWhatsappNumber(phone: string | null | undefined): string {
@@ -54,6 +56,7 @@ interface RawSiteSettingsRow {
   kpr_interest_rate?: number | string | null;
   instagram_url?: string | null;
   tiktok_url?: string | null;
+  facebook_url?: string | null;
 }
 
 export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
@@ -82,7 +85,7 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
     const { data, error } = await supabase
       .from("site_settings")
       .select(
-        "id, company_name, whatsapp_number, office_address, operating_hours, kpr_interest_rate, instagram_url, tiktok_url"
+        "id, company_name, whatsapp_number, office_address, operating_hours, kpr_interest_rate, instagram_url, tiktok_url, facebook_url"
       )
       .eq("id", 1)
       .single();
@@ -110,12 +113,18 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
         ? parsedRate
         : DEFAULT_SITE_SETTINGS.kpr_interest_rate,
       // Preserve explicit empty string so clearing a URL hides the social icon
-      instagram_url: row.instagram_url !== null && row.instagram_url !== undefined
-        ? row.instagram_url.trim()
-        : DEFAULT_SITE_SETTINGS.instagram_url,
-      tiktok_url: row.tiktok_url !== null && row.tiktok_url !== undefined
-        ? row.tiktok_url.trim()
-        : DEFAULT_SITE_SETTINGS.tiktok_url,
+      instagram_url:
+        row.instagram_url !== null && row.instagram_url !== undefined
+          ? row.instagram_url.trim()
+          : DEFAULT_SITE_SETTINGS.instagram_url,
+      tiktok_url:
+        row.tiktok_url !== null && row.tiktok_url !== undefined
+          ? row.tiktok_url.trim()
+          : DEFAULT_SITE_SETTINGS.tiktok_url,
+      facebook_url:
+        row.facebook_url !== null && row.facebook_url !== undefined
+          ? row.facebook_url.trim()
+          : DEFAULT_SITE_SETTINGS.facebook_url,
     };
   } catch {
     return DEFAULT_SITE_SETTINGS;

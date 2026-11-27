@@ -3,14 +3,21 @@ import { DEFAULT_SITE_SETTINGS } from "@/lib/site-settings";
 interface SocialSectionProps {
   instagramUrl?: string;
   tiktokUrl?: string;
+  facebookUrl?: string;
 }
 
 export default function SocialSection({
   instagramUrl = DEFAULT_SITE_SETTINGS.instagram_url,
   tiktokUrl = DEFAULT_SITE_SETTINGS.tiktok_url,
+  facebookUrl = DEFAULT_SITE_SETTINGS.facebook_url,
 }: SocialSectionProps) {
   const cleanInstagram = instagramUrl.trim();
   const cleanTiktok = tiktokUrl.trim();
+  const cleanFacebook = facebookUrl.trim();
+
+  if (!cleanInstagram && !cleanTiktok && !cleanFacebook) {
+    return null;
+  }
 
   return (
     <section className="social-section" aria-label="Media sosial">
@@ -41,17 +48,19 @@ export default function SocialSection({
             </svg>
           </a>
         )}
-        <a
-          href="https://www.facebook.com/share/1FEMa37atR/?mibextid=wwXIfr"
-          target="_blank"
-          rel="noreferrer"
-          className="social-link facebook"
-          aria-label="Facebook"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M13.5 22v-8h2.7l.5-3h-3.2V7.5c0-.9.3-1.5 1.6-1.5H17V3.1c-.4-.1-1.6-.2-3-.2-3 0-5 1.8-5 5.1V11H6.5v3h2.5v8h4.5z" />
-          </svg>
-        </a>
+        {cleanFacebook && (
+          <a
+            href={cleanFacebook}
+            target="_blank"
+            rel="noreferrer"
+            className="social-link facebook"
+            aria-label="Facebook"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M13.5 22v-8h2.7l.5-3h-3.2V7.5c0-.9.3-1.5 1.6-1.5H17V3.1c-.4-.1-1.6-.2-3-.2-3 0-5 1.8-5 5.1V11H6.5v3h2.5v8h4.5z" />
+            </svg>
+          </a>
+        )}
       </div>
     </section>
   );

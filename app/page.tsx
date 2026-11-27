@@ -31,6 +31,7 @@ export default async function HomePage() {
       <SocialSection
         instagramUrl={siteSettings.instagram_url}
         tiktokUrl={siteSettings.tiktok_url}
+        facebookUrl={siteSettings.facebook_url}
       />
     </>
   );
