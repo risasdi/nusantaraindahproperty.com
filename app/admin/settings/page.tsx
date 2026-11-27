@@ -1,18 +1,25 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { SettingsIcon } from "@/components/admin/AdminIcons";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentAdminProfile } from "@/lib/admin-auth";
+import { getRolePermissions } from "@/lib/rbac";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const profile = await getCurrentAdminProfile();
 
-  if (!user) {
+  if (!profile) {
     redirect("/admin/login");
+  }
+
+  if (profile.is_active === false) {
+    redirect("/admin/login?error=inactive");
+  }
+
+  const permissions = getRolePermissions(profile.role);
+  if (!permissions.canAccessSettings) {
+    redirect("/admin");
   }
 
   return (

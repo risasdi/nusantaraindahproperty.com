@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDateTimeWIB } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
+import { useAdminActions } from "./AdminShell";
 import {
   AwardIcon,
   CalendarIcon,
@@ -34,6 +35,9 @@ export interface DbLead {
   source: string | null;
   status: string;
   created_at: string;
+  assigned_to?: string | null;
+  sales_id?: string | null;
+  user_id?: string | null;
 }
 
 function getStatusSelectClasses(status: string): string {
@@ -78,6 +82,9 @@ export default function AdminLeadsDashboard({
   initialError,
 }: AdminLeadsDashboardProps) {
   const router = useRouter();
+  const { permissions } = useAdminActions();
+  const { canUpdateLeads, canDeleteLeads } = permissions;
+
   const [leads, setLeads] = useState<DbLead[]>(initialLeads);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -105,6 +112,7 @@ export default function AdminLeadsDashboard({
   }, [deleteTarget]);
 
   const handleStatusChange = async (lead: DbLead, nextStatus: string) => {
+    if (!canUpdateLeads) return;
     const prevStatus = lead.status;
     setUpdatingStatusId(lead.id);
     setLeads((prev) =>
@@ -145,7 +153,7 @@ export default function AdminLeadsDashboard({
   };
 
   const handleConfirmDelete = async () => {
-    if (!deleteTarget) return;
+    if (!deleteTarget || !canDeleteLeads) return;
     setDeleting(true);
 
     try {
@@ -428,25 +436,35 @@ export default function AdminLeadsDashboard({
                         </p>
                       </td>
 
-                      {/* Inline Status Select */}
+                      {/* Inline Status Select (editable) or Static Badge (read-only) */}
                       <td className="py-4 px-4 whitespace-nowrap">
-                        <select
-                          aria-label={`Ubah status ${lead.name}`}
-                          value={lead.status}
-                          disabled={isUpdating}
-                          onChange={(e) =>
-                            handleStatusChange(lead, e.target.value)
-                          }
-                          className={`h-9 px-3 rounded-lg border text-xs font-semibold transition cursor-pointer disabled:opacity-60 focus:outline-none ${getStatusSelectClasses(
-                            lead.status
-                          )}`}
-                        >
-                          {LEAD_STATUSES.map((status) => (
-                            <option key={status} value={status}>
-                              {status}
-                            </option>
-                          ))}
-                        </select>
+                        {canUpdateLeads ? (
+                          <select
+                            aria-label={`Ubah status ${lead.name}`}
+                            value={lead.status}
+                            disabled={isUpdating}
+                            onChange={(e) =>
+                              handleStatusChange(lead, e.target.value)
+                            }
+                            className={`h-9 px-3 rounded-lg border text-xs font-semibold transition cursor-pointer disabled:opacity-60 focus:outline-none ${getStatusSelectClasses(
+                              lead.status
+                            )}`}
+                          >
+                            {LEAD_STATUSES.map((status) => (
+                              <option key={status} value={status}>
+                                {status}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span
+                            className={`inline-flex items-center px-3 py-1.5 rounded-lg border text-xs font-semibold ${getStatusSelectClasses(
+                              lead.status
+                            )}`}
+                          >
+                            {lead.status}
+                          </span>
+                        )}
                       </td>
 
                       {/* Actions */}
@@ -461,15 +479,17 @@ export default function AdminLeadsDashboard({
                             <WhatsAppIcon className="w-3.5 h-3.5 text-white shrink-0" />
                             <span className="text-white">Chat WA</span>
                           </a>
-                          <button
-                            type="button"
-                            onClick={() => setDeleteTarget(lead)}
-                            title="Hapus lead"
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 text-xs font-semibold hover:bg-red-100 transition cursor-pointer"
-                          >
-                            <TrashIcon className="w-3.5 h-3.5" />
-                            <span>Hapus</span>
-                          </button>
+                          {canDeleteLeads && (
+                            <button
+                              type="button"
+                              onClick={() => setDeleteTarget(lead)}
+                              title="Hapus lead"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 text-xs font-semibold hover:bg-red-100 transition cursor-pointer"
+                            >
+                              <TrashIcon className="w-3.5 h-3.5" />
+                              <span>Hapus</span>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

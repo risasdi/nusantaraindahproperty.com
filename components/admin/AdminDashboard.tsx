@@ -134,7 +134,8 @@ export default function AdminDashboard({
   autoOpenCreate = false,
 }: AdminDashboardProps) {
   const router = useRouter();
-  const { registerCreateHandler } = useAdminActions();
+  const { permissions, registerCreateHandler } = useAdminActions();
+  const canManageProperties = permissions.canManageProperties;
 
   const [properties, setProperties] = useState<DbProperty[]>(initialProperties);
   const [searchQuery, setSearchQuery] = useState("");
@@ -156,7 +157,9 @@ export default function AdminDashboard({
   );
 
   // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(autoOpenCreate);
+  const [isModalOpen, setIsModalOpen] = useState(
+    autoOpenCreate && canManageProperties
+  );
   const [editingProperty, setEditingProperty] = useState<DbProperty | null>(
     null
   );
@@ -172,18 +175,23 @@ export default function AdminDashboard({
   const [deleting, setDeleting] = useState(false);
 
   const openCreateModal = useCallback(() => {
+    if (!canManageProperties) return;
     setEditingProperty(null);
     setSlugTouched(false);
     setForm(EMPTY_FORM);
     setManualImageUrl("");
     setFormError(null);
     setIsModalOpen(true);
-  }, []);
+  }, [canManageProperties]);
 
   useEffect(() => {
+    if (!canManageProperties) {
+      registerCreateHandler(null);
+      return;
+    }
     registerCreateHandler(openCreateModal);
     return () => registerCreateHandler(null);
-  }, [registerCreateHandler, openCreateModal]);
+  }, [canManageProperties, registerCreateHandler, openCreateModal]);
 
   useEffect(() => {
     if (!isModalOpen && !deleteTarget) return;
@@ -210,6 +218,7 @@ export default function AdminDashboard({
   };
 
   const openEditModal = (property: DbProperty) => {
+    if (!canManageProperties) return;
     setEditingProperty(property);
     setSlugTouched(true);
     setForm(propertyToForm(property));
@@ -242,6 +251,7 @@ export default function AdminDashboard({
   };
 
   const handleToggleFeatured = async (property: DbProperty) => {
+    if (!canManageProperties) return;
     setTogglingFeaturedId(property.id);
     const nextValue = !property.is_featured;
 
@@ -361,6 +371,7 @@ export default function AdminDashboard({
 
   const handleSaveProperty = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!canManageProperties) return;
     setFormError(null);
 
     const cleanSlug = slugify(form.slug);
@@ -445,7 +456,7 @@ export default function AdminDashboard({
   };
 
   const handleConfirmDelete = async () => {
-    if (!deleteTarget) return;
+    if (!deleteTarget || !canManageProperties) return;
     setDeleting(true);
 
     try {
@@ -736,7 +747,7 @@ export default function AdminDashboard({
                         ? "Tambahkan properti pertama Anda atau jalankan supabase/seed.sql di SQL Editor."
                         : "Coba ubah kata kunci pencarian atau reset filter status."}
                     </p>
-                    {properties.length === 0 && (
+                    {properties.length === 0 && canManageProperties && (
                       <button
                         type="button"
                         onClick={openCreateModal}
@@ -826,31 +837,53 @@ export default function AdminDashboard({
                         </span>
                       </td>
 
-                      {/* Featured Toggle */}
+                      {/* Featured Toggle / Badge */}
                       <td className="py-4 px-4 whitespace-nowrap">
-                        <button
-                          type="button"
-                          disabled={isToggling}
-                          onClick={() => handleToggleFeatured(property)}
-                          title={
-                            property.is_featured
-                              ? "Hapus dari Properti Unggulan"
-                              : "Jadikan Properti Unggulan"
-                          }
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition cursor-pointer disabled:opacity-50 ${
-                            property.is_featured
-                              ? "bg-[#C8A15A]/15 text-[#9A722B] ring-1 ring-inset ring-[#C8A15A]/40 hover:bg-[#C8A15A]/25"
-                              : "bg-slate-100 text-slate-500 hover:bg-slate-200/70"
-                          }`}
-                        >
-                          <StarIcon
-                            className="w-3.5 h-3.5"
-                            fill={property.is_featured ? "currentColor" : "none"}
-                          />
-                          <span>
-                            {property.is_featured ? "Unggulan" : "Standar"}
+                        {canManageProperties ? (
+                          <button
+                            type="button"
+                            disabled={isToggling}
+                            onClick={() => handleToggleFeatured(property)}
+                            title={
+                              property.is_featured
+                                ? "Hapus dari Properti Unggulan"
+                                : "Jadikan Properti Unggulan"
+                            }
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition cursor-pointer disabled:opacity-50 ${
+                              property.is_featured
+                                ? "bg-[#C8A15A]/15 text-[#9A722B] ring-1 ring-inset ring-[#C8A15A]/40 hover:bg-[#C8A15A]/25"
+                                : "bg-slate-100 text-slate-500 hover:bg-slate-200/70"
+                            }`}
+                          >
+                            <StarIcon
+                              className="w-3.5 h-3.5"
+                              fill={
+                                property.is_featured ? "currentColor" : "none"
+                              }
+                            />
+                            <span>
+                              {property.is_featured ? "Unggulan" : "Standar"}
+                            </span>
+                          </button>
+                        ) : (
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                              property.is_featured
+                                ? "bg-[#C8A15A]/15 text-[#9A722B] ring-1 ring-inset ring-[#C8A15A]/40"
+                                : "bg-slate-100 text-slate-500"
+                            }`}
+                          >
+                            <StarIcon
+                              className="w-3.5 h-3.5"
+                              fill={
+                                property.is_featured ? "currentColor" : "none"
+                              }
+                            />
+                            <span>
+                              {property.is_featured ? "Unggulan" : "Standar"}
+                            </span>
                           </span>
-                        </button>
+                        )}
                       </td>
 
                       {/* Actions */}
@@ -865,24 +898,28 @@ export default function AdminDashboard({
                             <EyeIcon className="w-3.5 h-3.5 text-slate-500" />
                             <span>Lihat</span>
                           </Link>
-                          <button
-                            type="button"
-                            onClick={() => openEditModal(property)}
-                            title="Edit properti"
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#063D36]/10 text-[#063D36] text-xs font-semibold hover:bg-[#063D36]/15 transition cursor-pointer"
-                          >
-                            <EditIcon className="w-3.5 h-3.5" />
-                            <span>Edit</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setDeleteTarget(property)}
-                            title="Hapus properti"
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 text-xs font-semibold hover:bg-red-100 transition cursor-pointer"
-                          >
-                            <TrashIcon className="w-3.5 h-3.5" />
-                            <span>Hapus</span>
-                          </button>
+                          {canManageProperties && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => openEditModal(property)}
+                                title="Edit properti"
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#063D36]/10 text-[#063D36] text-xs font-semibold hover:bg-[#063D36]/15 transition cursor-pointer"
+                              >
+                                <EditIcon className="w-3.5 h-3.5" />
+                                <span>Edit</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setDeleteTarget(property)}
+                                title="Hapus properti"
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 text-xs font-semibold hover:bg-red-100 transition cursor-pointer"
+                              >
+                                <TrashIcon className="w-3.5 h-3.5" />
+                                <span>Hapus</span>
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>

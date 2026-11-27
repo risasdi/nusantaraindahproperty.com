@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import AdminShell from "@/components/admin/AdminShell";
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { getCurrentAdminProfile } from "@/lib/admin-auth";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard | Nusantara Indah Property",
@@ -17,19 +17,7 @@ export default async function AdminLayout({
 }: {
   children: ReactNode;
 }) {
-  let userEmail: string | null = null;
+  const profile = await getCurrentAdminProfile();
 
-  if (isSupabaseConfigured()) {
-    try {
-      const supabase = await createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      userEmail = user?.email ?? null;
-    } catch {
-      userEmail = null;
-    }
-  }
-
-  return <AdminShell userEmail={userEmail}>{children}</AdminShell>;
+  return <AdminShell profile={profile}>{children}</AdminShell>;
 }

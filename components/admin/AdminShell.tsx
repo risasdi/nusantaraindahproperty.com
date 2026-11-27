@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -12,6 +13,12 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import {
+  getRoleBadgeMeta,
+  getRolePermissions,
+  type RolePermissions,
+  type UserProfile,
+} from "@/lib/rbac";
 import { createClient } from "@/lib/supabase/client";
 import {
   BuildingIcon,
@@ -25,12 +32,24 @@ import {
   SettingsIcon,
 } from "./AdminIcons";
 
+const DEFAULT_PERMISSIONS: RolePermissions = {
+  canManageProperties: false,
+  canUpdateLeads: false,
+  canDeleteLeads: false,
+  canAccessSettings: false,
+  ownLeadsOnly: false,
+};
+
 interface AdminActionContextValue {
+  profile: UserProfile | null;
+  permissions: RolePermissions;
   registerCreateHandler: (handler: (() => void) | null) => void;
   openCreateProperty: () => void;
 }
 
 const AdminActionContext = createContext<AdminActionContextValue>({
+  profile: null,
+  permissions: DEFAULT_PERMISSIONS,
   registerCreateHandler: () => {},
   openCreateProperty: () => {},
 });
@@ -45,24 +64,28 @@ const SIDEBAR_ITEMS = [
     href: "/admin",
     icon: LayoutDashboardIcon,
     badge: null,
+    requiresSettingsAccess: false,
   },
   {
     label: "Kelola Properti",
     href: "/admin/properties",
     icon: BuildingIcon,
     badge: null,
+    requiresSettingsAccess: false,
   },
   {
     label: "Leads & Pesan",
     href: "/admin/leads",
     icon: MessageSquareIcon,
     badge: null,
+    requiresSettingsAccess: false,
   },
   {
     label: "Pengaturan",
     href: "/admin/settings",
     icon: SettingsIcon,
     badge: "Segera",
+    requiresSettingsAccess: true,
   },
 ] as const;
 
@@ -73,7 +96,7 @@ const PAGE_TITLES: Record<string, { title: string; subtitle: string }> = {
   },
   "/admin/properties": {
     title: "Kelola Properti",
-    subtitle: "Tambah, perbarui, dan atur katalog properti secara terpusat",
+    subtitle: "Katalog properti PT Nusantara Indah Property",
   },
   "/admin/leads": {
     title: "Leads & Pesan",
@@ -86,28 +109,53 @@ const PAGE_TITLES: Record<string, { title: string; subtitle: string }> = {
 };
 
 interface AdminShellProps {
-  userEmail: string | null;
+  profile: UserProfile | null;
   children: ReactNode;
 }
 
-export default function AdminShell({ userEmail, children }: AdminShellProps) {
+export default function AdminShell({ profile, children }: AdminShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const createHandlerRef = useRef<(() => void) | null>(null);
 
+  const permissions = useMemo(
+    () => (profile ? getRolePermissions(profile.role) : DEFAULT_PERMISSIONS),
+    [profile]
+  );
+
   const registerCreateHandler = useCallback((handler: (() => void) | null) => {
     createHandlerRef.current = handler;
   }, []);
 
   const openCreateProperty = useCallback(() => {
+    if (!permissions.canManageProperties) return;
     if (createHandlerRef.current) {
       createHandlerRef.current();
     } else {
       router.push("/admin/properties?new=1");
     }
-  }, [router]);
+  }, [permissions.canManageProperties, router]);
+
+  // Client-side safeguard: force logout if profile is inactive
+  useEffect(() => {
+    if (!profile || profile.is_active !== false || pathname === "/admin/login") {
+      return;
+    }
+
+    const forceSignOut = async () => {
+      try {
+        const supabase = createClient();
+        await supabase.auth.signOut();
+      } finally {
+        router.replace("/admin/login?error=inactive");
+        router.refresh();
+      }
+    };
+
+    void forceSignOut();
+  }, [profile, pathname, router]);
 
   useEffect(() => {
     document.body.style.overflow = sidebarOpen ? "hidden" : "";
@@ -116,8 +164,8 @@ export default function AdminShell({ userEmail, children }: AdminShellProps) {
     };
   }, [sidebarOpen]);
 
-  // Do not wrap /admin/login with the dashboard sidebar & topbar
-  if (pathname === "/admin/login" || !userEmail) {
+  // Do not wrap /admin/login or unauthenticated/inactive states with dashboard chrome
+  if (pathname === "/admin/login" || !profile || profile.is_active === false) {
     return <>{children}</>;
   }
 
@@ -126,7 +174,14 @@ export default function AdminShell({ userEmail, children }: AdminShellProps) {
     subtitle: "Panel manajemen PT Nusantara Indah Property",
   };
 
-  const userInitial = userEmail.charAt(0).toUpperCase();
+  const displayName =
+    profile.full_name?.trim() || profile.email.split("@")[0] || "Admin";
+  const userInitial = displayName.charAt(0).toUpperCase();
+  const roleBadge = getRoleBadgeMeta(profile.role);
+
+  const visibleSidebarItems = SIDEBAR_ITEMS.filter(
+    (item) => !item.requiresSettingsAccess || permissions.canAccessSettings
+  );
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -178,12 +233,15 @@ export default function AdminShell({ userEmail, children }: AdminShellProps) {
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto" aria-label="Menu Admin">
+      <nav
+        className="flex-1 px-3 py-5 space-y-1 overflow-y-auto"
+        aria-label="Menu Admin"
+      >
         <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-white/45">
           Menu Utama
         </p>
 
-        {SIDEBAR_ITEMS.map((item) => {
+        {visibleSidebarItems.map((item) => {
           const Icon = item.icon;
           const isActive =
             item.href === "/admin"
@@ -248,7 +306,12 @@ export default function AdminShell({ userEmail, children }: AdminShellProps) {
 
   return (
     <AdminActionContext.Provider
-      value={{ registerCreateHandler, openCreateProperty }}
+      value={{
+        profile,
+        permissions,
+        registerCreateHandler,
+        openCreateProperty,
+      }}
     >
       <div className="min-h-screen bg-slate-50 text-slate-900">
         {/* Desktop Fixed Sidebar */}
@@ -295,25 +358,38 @@ export default function AdminShell({ userEmail, children }: AdminShellProps) {
             </div>
 
             <div className="flex items-center gap-3 shrink-0">
-              {/* Admin Email Pill */}
-              <div className="hidden md:flex items-center gap-2.5 pl-1.5 pr-3.5 py-1 rounded-full bg-slate-100 border border-slate-200/80">
+              {/* Admin Profile + Role Badge */}
+              <div className="flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-full bg-slate-50 border border-slate-200/90">
                 <span className="w-7 h-7 rounded-full bg-[#063D36] text-[#C8A15A] text-xs font-bold flex items-center justify-center shrink-0">
                   {userInitial}
                 </span>
-                <span className="text-xs font-medium text-slate-700 max-w-[180px] truncate">
-                  {userEmail}
+                <div className="hidden md:flex flex-col leading-tight min-w-0">
+                  <span className="text-xs font-semibold text-slate-800 max-w-[150px] truncate">
+                    {displayName}
+                  </span>
+                  <span className="text-[10px] text-slate-500 max-w-[150px] truncate">
+                    {profile.email}
+                  </span>
+                </div>
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide whitespace-nowrap ${roleBadge.badgeClass}`}
+                >
+                  {roleBadge.label}
                 </span>
               </div>
 
-              {/* Quick Action Button */}
-              <button
-                type="button"
-                onClick={openCreateProperty}
-                className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-[#063D36] hover:bg-[#052e29] text-white text-xs sm:text-sm font-semibold shadow-xs transition cursor-pointer"
-              >
-                <PlusIcon className="w-4 h-4 text-[#C8A15A]" />
-                <span>Tambah Properti</span>
-              </button>
+              {/* Quick Action Button (only for roles that can manage properties) */}
+              {permissions.canManageProperties && (
+                <button
+                  type="button"
+                  onClick={openCreateProperty}
+                  className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-[#063D36] hover:bg-[#052e29] text-white text-xs sm:text-sm font-semibold shadow-xs transition cursor-pointer"
+                >
+                  <PlusIcon className="w-4 h-4 text-[#C8A15A]" />
+                  <span className="hidden sm:inline">Tambah Properti</span>
+                  <span className="sm:hidden">Tambah</span>
+                </button>
+              )}
             </div>
           </header>
 
