@@ -62,18 +62,24 @@ export default function LeadForm({
       const validPropertyUuid =
         propertyId && UUID_REGEX.test(propertyId) ? propertyId : null;
 
-      const { error } = await supabase.from("leads").insert({
-        name: trimmedName,
-        whatsapp: trimmedWa,
-        property_id: validPropertyUuid,
-        property_title: propertyTitle ?? null,
-        message: message.trim() || null,
-        source,
-        status: "Baru",
-      });
+      const { error } = await supabase.from("leads").insert([
+        {
+          name: trimmedName,
+          whatsapp: trimmedWa,
+          property_id: validPropertyUuid,
+          property_title: propertyTitle?.trim() || null,
+          message: message.trim() || null,
+          source,
+          status: "Baru",
+        },
+      ]);
 
       if (error) {
-        throw error;
+        console.error("Lead submit error:", error);
+        setErrorMessage(
+          `Gagal mengirim permintaan: ${error.message || "Terjadi kesalahan pada server."}`
+        );
+        return;
       }
 
       trackEvent("Lead", {
@@ -86,10 +92,13 @@ export default function LeadForm({
       setSuccessMessage(
         "Terima kasih! Data Anda telah kami terima. Tim marketing Nusantara Indah Property akan segera menghubungi Anda melalui WhatsApp."
       );
-    } catch {
-      setErrorMessage(
-        "Maaf, permintaan Anda belum dapat dikirim saat ini. Silakan coba lagi atau hubungi kami langsung melalui tombol WhatsApp."
-      );
+    } catch (error) {
+      console.error("Lead submit error:", error);
+      const detail =
+        error && typeof error === "object" && "message" in error
+          ? String((error as { message: unknown }).message)
+          : "Terjadi kesalahan jaringan. Silakan coba lagi.";
+      setErrorMessage(`Gagal mengirim permintaan: ${detail}`);
     } finally {
       setSubmitting(false);
     }
