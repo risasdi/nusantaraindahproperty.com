@@ -6,15 +6,24 @@ import FeaturedPropertiesSection from "@/components/FeaturedPropertiesSection";
 import StatsSection from "@/components/StatsSection";
 import ContactSection from "@/components/ContactSection";
 import SocialSection from "@/components/SocialSection";
+import {
+  getFeaturedProperties,
+  getPropertyTypeOptions,
+} from "@/lib/properties";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [featuredProperties, typeOptions] = await Promise.all([
+    getFeaturedProperties(),
+    getPropertyTypeOptions(),
+  ]);
+
   return (
     <>
       <SplashScreen />
       <HeroSection />
-      <PropertySearchBar />
+      <PropertySearchBar typeOptions={typeOptions} />
       <AboutSection />
-      <FeaturedPropertiesSection />
+      <FeaturedPropertiesSection properties={featuredProperties} />
       <StatsSection />
       <ContactSection />
       <SocialSection />

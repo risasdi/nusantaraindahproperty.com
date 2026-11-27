@@ -3,6 +3,7 @@ import { Cinzel, Montserrat } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
+import PublicChrome from "@/components/PublicChrome";
 import "./globals.css";
 
 const cinzel = Cinzel({
@@ -60,10 +61,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="id" className={`${cinzel.variable} ${montserrat.variable}`}>
       <body>
-        <Navbar />
-        {children}
-        <Footer />
-        <FloatingWhatsApp />
+        <PublicChrome
+          navbar={<Navbar />}
+          footer={<Footer />}
+          floatingWhatsApp={<FloatingWhatsApp />}
+        >
+          {children}
+        </PublicChrome>
       </body>
     </html>
   );

@@ -1,18 +1,22 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import PropertyDetailView from "@/components/PropertyDetailView";
-import { getPropertyBySlug } from "@/data/properties";
+import { getPropertyDetailBySlug } from "@/lib/properties";
 
-const property = getPropertyBySlug("villa-resik");
+const SLUG = "villa-resik";
 
-export const metadata: Metadata = {
-  title: property?.seoTitle ?? "Villa Resik | Nusantara Indah Property",
-  description:
-    property?.seoDescription ??
-    "Detail Villa Resik dari Nusantara Indah Property.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const property = await getPropertyDetailBySlug(SLUG);
+  return {
+    title: property?.seoTitle ?? "Villa Resik | Nusantara Indah Property",
+    description:
+      property?.seoDescription ??
+      "Detail Villa Resik dari Nusantara Indah Property.",
+  };
+}
 
-export default function VillaResikPage() {
+export default async function VillaResikPage() {
+  const property = await getPropertyDetailBySlug(SLUG);
   if (!property) notFound();
   return <PropertyDetailView property={property} />;
 }

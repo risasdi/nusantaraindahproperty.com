@@ -1,8 +1,14 @@
 import FadeUp from "./FadeUp";
-import PropertyCard from "./PropertyCard";
+import PropertyCard, { type PropertySummary } from "./PropertyCard";
 import { FEATURED_PROPERTIES } from "@/data/properties";
 
-export default function FeaturedPropertiesSection() {
+interface FeaturedPropertiesSectionProps {
+  properties?: PropertySummary[];
+}
+
+export default function FeaturedPropertiesSection({
+  properties = FEATURED_PROPERTIES,
+}: FeaturedPropertiesSectionProps) {
   return (
     <section id="catalog" className="listings-section">
       <div className="section-header">
@@ -11,7 +17,7 @@ export default function FeaturedPropertiesSection() {
       </div>
 
       <div className="property-grid">
-        {FEATURED_PROPERTIES.map((property, index) => (
+        {properties.map((property, index) => (
           <PropertyCard
             key={property.id}
             property={property}

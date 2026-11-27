@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { CLUSTER_SUKAMUKTI_CHOICES } from "@/data/properties";
+import { getClusterSukamuktiChoices } from "@/lib/properties";
 
 export const metadata: Metadata = {
   title: "Pilih Tipe Rumah | Cluster Sukamukti Islamic",
   description: "Pilih tipe rumah di Cluster Sukamukti Islamic.",
 };
 
-export default function ClusterSukamuktiIslamicPage() {
+export default async function ClusterSukamuktiIslamicPage() {
+  const choices = await getClusterSukamuktiChoices();
+
   return (
     <div className="cluster-choice-page">
       <main className="choice-main">
@@ -23,7 +25,7 @@ export default function ClusterSukamuktiIslamicPage() {
         </div>
 
         <div className="choice-grid">
-          {CLUSTER_SUKAMUKTI_CHOICES.map((choice) => (
+          {choices.map((choice) => (
             <Link key={choice.id} className="choice-card" href={choice.href}>
               <div className="choice-card-img-wrapper">
                 <Image

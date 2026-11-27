@@ -12,6 +12,7 @@ interface PropertySearchBarProps {
   initialLocation?: string;
   initialPropertyType?: string;
   initialMaxPrice?: number;
+  typeOptions?: readonly string[];
   containerStyle?: CSSProperties;
 }
 
@@ -19,6 +20,7 @@ export default function PropertySearchBar({
   initialLocation = "",
   initialPropertyType = "Semua Properti",
   initialMaxPrice = MAX_SEARCH_PRICE,
+  typeOptions = PROPERTY_TYPE_OPTIONS,
   containerStyle,
 }: PropertySearchBarProps) {
   const router = useRouter();
@@ -67,7 +69,7 @@ export default function PropertySearchBar({
             value={propertyType}
             onChange={(e) => setPropertyType(e.target.value)}
           >
-            {PROPERTY_TYPE_OPTIONS.map((option) => (
+            {typeOptions.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>

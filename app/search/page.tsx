@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import PropertyCard from "@/components/PropertyCard";
 import PropertySearchBar from "@/components/PropertySearchBar";
-import {
-  filterProperties,
-  MAX_SEARCH_PRICE,
-  toPropertySummary,
-} from "@/data/properties";
+import { MAX_SEARCH_PRICE } from "@/data/properties";
+import { getPropertyTypeOptions, searchProperties } from "@/lib/properties";
 
 export const metadata: Metadata = {
   title: "Hasil Pencarian | Nusantara Indah Property",
@@ -35,11 +32,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     ? parsedMaxPrice
     : MAX_SEARCH_PRICE;
 
-  const filteredProperties = filterProperties({
-    location: locationQuery,
-    propertyType,
-    maxPrice,
-  });
+  const [filteredProperties, typeOptions] = await Promise.all([
+    searchProperties({
+      location: locationQuery,
+      propertyType,
+      maxPrice,
+    }),
+    getPropertyTypeOptions(),
+  ]);
 
   return (
     <div className="results-page">
@@ -59,6 +59,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           initialLocation={locationQuery}
           initialPropertyType={propertyType}
           initialMaxPrice={maxPrice}
+          typeOptions={typeOptions}
           containerStyle={{
             marginTop: "-85px",
             marginBottom: "40px",
@@ -76,7 +77,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             filteredProperties.map((property, index) => (
               <PropertyCard
                 key={property.id}
-                property={toPropertySummary(property)}
+                property={property}
                 delay={Number((index * 0.1).toFixed(1))}
               />
             ))
