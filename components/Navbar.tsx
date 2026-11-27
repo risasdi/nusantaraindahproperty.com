@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { trackEvent } from "@/lib/meta-pixel";
 
 const NAV_ITEMS = [
   { label: "Beranda", href: "/#home", sectionId: "home" },
@@ -113,7 +114,16 @@ export default function Navbar() {
             </li>
           ))}
           <li>
-            <Link href="/#contact" className="nav-cta" onClick={closeMenu}>
+            <Link
+              href="/#contact"
+              className="nav-cta"
+              onClick={() => {
+                trackEvent("Contact", {
+                  content_name: "Navbar - Hubungi Agen",
+                });
+                closeMenu();
+              }}
+            >
               Hubungi Agen
             </Link>
           </li>

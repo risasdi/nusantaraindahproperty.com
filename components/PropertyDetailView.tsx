@@ -1,6 +1,7 @@
 import Link from "next/link";
 import FadeUp from "./FadeUp";
 import PropertyGallery from "./PropertyGallery";
+import PropertyViewTracker from "./PropertyViewTracker";
 import type { PropertyItem } from "@/data/properties";
 
 interface PropertyDetailViewProps {
@@ -12,6 +13,11 @@ export default function PropertyDetailView({
 }: PropertyDetailViewProps) {
   return (
     <div className="detail-page">
+      <PropertyViewTracker
+        title={property.name}
+        price={property.price}
+        slug={property.slug}
+      />
       <main className="detail-main">
         <Link className="detail-back-top" href={property.backHref}>
           &#8592; {property.backLabel}

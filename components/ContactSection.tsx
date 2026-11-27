@@ -1,4 +1,5 @@
 import FadeUp from "./FadeUp";
+import TrackedContactLink from "./TrackedContactLink";
 
 export default function ContactSection() {
   return (
@@ -9,9 +10,14 @@ export default function ContactSection() {
         yang tepat untuk langkah berikutnya.
       </p>
       <div className="contact-buttons">
-        <a href="mailto:nusantaraindahproperty@gmail.com" className="btn-email">
+        <TrackedContactLink
+          href="mailto:nusantaraindahproperty@gmail.com"
+          className="btn-email"
+          contentName="Contact Section - Kirim Email"
+          contentCategory="Email"
+        >
           Kirim Email
-        </a>
+        </TrackedContactLink>
       </div>
     </section>
   );

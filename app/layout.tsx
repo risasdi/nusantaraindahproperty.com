@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import PublicChrome from "@/components/PublicChrome";
+import MetaPixel from "@/components/MetaPixel";
 import "./globals.css";
 
 const cinzel = Cinzel({
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="id" className={`${cinzel.variable} ${montserrat.variable}`}>
       <body>
+        <MetaPixel />
         <PublicChrome
           navbar={<Navbar />}
           footer={<Footer />}
