@@ -456,10 +456,10 @@ export default function AdminLeadsDashboard({
                             href={buildWhatsAppUrl(lead)}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#1ebe5b] text-white text-xs font-bold transition shadow-xs"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#16A34A] hover:bg-[#15803D] !text-white text-xs font-semibold transition shadow-xs"
                           >
-                            <WhatsAppIcon className="w-3.5 h-3.5" />
-                            <span>Chat WA</span>
+                            <WhatsAppIcon className="w-3.5 h-3.5 text-white shrink-0" />
+                            <span className="text-white">Chat WA</span>
                           </a>
                           <button
                             type="button"
