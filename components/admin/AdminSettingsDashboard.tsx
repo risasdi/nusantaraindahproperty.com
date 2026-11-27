@@ -37,6 +37,7 @@ export interface SiteSettingsData {
   instagram_url: string;
   tiktok_url: string;
   facebook_url: string;
+  ai_knowledge?: string | null;
 }
 
 interface AdminSettingsDashboardProps {
@@ -120,6 +121,7 @@ export default function AdminSettingsDashboard({
     instagram_url: initialSettings.instagram_url,
     tiktok_url: initialSettings.tiktok_url,
     facebook_url: initialSettings.facebook_url,
+    ai_knowledge: initialSettings.ai_knowledge ?? "",
   });
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsFeedback, setSettingsFeedback] = useState<{
@@ -336,6 +338,7 @@ export default function AdminSettingsDashboard({
           instagram_url: siteForm.instagram_url.trim(),
           tiktok_url: siteForm.tiktok_url.trim(),
           facebook_url: siteForm.facebook_url.trim(),
+          ai_knowledge: siteForm.ai_knowledge.trim(),
           updated_at: new Date().toISOString(),
         },
         { onConflict: "id" }
@@ -846,6 +849,33 @@ export default function AdminSettingsDashboard({
                     className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15"
                   />
                 </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100">
+                <label
+                  htmlFor="setting-ai-knowledge"
+                  className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1"
+                >
+                  KNOWLEDGE BASE &amp; INFO PROMO AI
+                </label>
+                <p className="text-xs text-slate-500 mb-2">
+                  Isi info promo, syarat KPR, bank rekanan, booking fee, atau
+                  FAQ. Perubahan di sini langsung dibaca oleh AI Chatbot secara
+                  real-time.
+                </p>
+                <textarea
+                  id="setting-ai-knowledge"
+                  rows={7}
+                  placeholder="Contoh:&#10;- Promo bulan ini: KPR DP 0%, All-in Booking Fee Rp 2 juta, bebas biaya BPHTB & AJB.&#10;- Bank rekanan: BSI, BCA, Mandiri, BTN.&#10;- Syarat KPR: KTP, KK, slip gaji 3 bulan terakhir / rekening koran usaha."
+                  value={siteForm.ai_knowledge}
+                  onChange={(e) =>
+                    setSiteForm((prev) => ({
+                      ...prev,
+                      ai_knowledge: e.target.value,
+                    }))
+                  }
+                  className="w-full p-3.5 rounded-xl border border-slate-200 text-sm text-slate-900 leading-relaxed focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15 resize-y"
+                />
               </div>
 
               <div className="pt-4 border-t border-slate-100 flex justify-end">

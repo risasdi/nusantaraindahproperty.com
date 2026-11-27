@@ -10,7 +10,7 @@ export default function FeaturedPropertiesSection({
   properties = FEATURED_PROPERTIES,
 }: FeaturedPropertiesSectionProps) {
   return (
-    <section id="catalog" className="listings-section">
+    <section id="catalog" className="listings-section scroll-mt-24">
       <div className="section-header">
         <h3>TEMUKAN PILIHAN KAMI</h3>
         <FadeUp as="h2">Properti Unggulan</FadeUp>

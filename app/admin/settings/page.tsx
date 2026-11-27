@@ -70,6 +70,11 @@ export default async function AdminSettingsPage() {
       rawSettings?.facebook_url !== null
         ? rawSettings.facebook_url
         : DEFAULT_SITE_SETTINGS.facebook_url,
+    ai_knowledge:
+      rawSettings?.ai_knowledge !== undefined &&
+      rawSettings?.ai_knowledge !== null
+        ? rawSettings.ai_knowledge
+        : (DEFAULT_SITE_SETTINGS.ai_knowledge ?? ""),
   };
 
   return (

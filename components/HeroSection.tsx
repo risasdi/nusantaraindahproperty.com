@@ -2,8 +2,8 @@ import Link from "next/link";
 
 export default function HeroSection() {
   return (
-    <header id="home" className="hero">
-      <div className="hero-overlay" />
+    <header id="home" className="hero scroll-mt-24">
+      <div className="hero-overlay pointer-events-none" />
       <div className="hero-inner">
         <div className="hero-content">
           <span className="hero-subtitle">

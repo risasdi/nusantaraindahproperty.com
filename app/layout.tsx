@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { Cinzel, Montserrat } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import FloatingWhatsApp from "@/components/FloatingWhatsApp";
+import PropertyChatBot from "@/components/PropertyChatBot";
 import PublicChrome from "@/components/PublicChrome";
 import MetaPixel from "@/components/MetaPixel";
+import AnalyticsPageTracker from "@/components/AnalyticsPageTracker";
 import { getSiteSettings } from "@/lib/site-settings";
 import "./globals.css";
 
@@ -70,11 +71,15 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="id" className={`${cinzel.variable} ${montserrat.variable}`}>
       <body>
         <MetaPixel />
+        <AnalyticsPageTracker />
         <PublicChrome
           navbar={<Navbar />}
           footer={<Footer settings={settings} />}
-          floatingWhatsApp={
-            <FloatingWhatsApp whatsappNumber={settings.whatsapp_number} />
+          floatingWidget={
+            <PropertyChatBot
+              whatsappNumber={settings.whatsapp_number}
+              companyName={settings.company_name}
+            />
           }
         >
           {children}

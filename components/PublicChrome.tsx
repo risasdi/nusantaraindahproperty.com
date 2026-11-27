@@ -7,14 +7,14 @@ interface PublicChromeProps {
   children: ReactNode;
   navbar: ReactNode;
   footer: ReactNode;
-  floatingWhatsApp: ReactNode;
+  floatingWidget: ReactNode;
 }
 
 export default function PublicChrome({
   children,
   navbar,
   footer,
-  floatingWhatsApp,
+  floatingWidget,
 }: PublicChromeProps) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith("/admin");
@@ -28,7 +28,7 @@ export default function PublicChrome({
       {navbar}
       {children}
       {footer}
-      {floatingWhatsApp}
+      {floatingWidget}
     </>
   );
 }

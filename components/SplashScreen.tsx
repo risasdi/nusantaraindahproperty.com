@@ -37,7 +37,7 @@ export default function SplashScreen() {
   return (
     <div
       id="splash-screen"
-      className={isAnimating ? "animate" : undefined}
+      className={`${isAnimating ? "animate" : ""}${isFadingOut ? " pointer-events-none" : ""}`.trim() || undefined}
       style={{ opacity: isFadingOut ? 0 : 1 }}
     >
       <div className="splash-logo-container">

@@ -13,7 +13,7 @@ export default function ContactSection({
   settings = DEFAULT_SITE_SETTINGS,
 }: ContactSectionProps) {
   return (
-    <section id="contact" className="contact-section">
+    <section id="contact" className="contact-section scroll-mt-24">
       <FadeUp as="h2">Siap menemukan rumah impian Anda?</FadeUp>
       <p>
         Hubungi tim marketing {settings.company_name} untuk konsultasi gratis

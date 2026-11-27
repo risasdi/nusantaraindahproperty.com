@@ -1,7 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { trackEvent } from "@/lib/meta-pixel";
+import { trackEvent as trackAnalyticsEvent } from "@/lib/analytics";
+import { trackEvent as trackMetaEvent } from "@/lib/meta-pixel";
 import {
   buildMarketingWhatsAppUrl,
   DEFAULT_SITE_SETTINGS,
@@ -40,9 +41,15 @@ export default function FloatingWhatsApp({
         ? headingText
         : pathname);
 
-    trackEvent("Contact", {
+    trackMetaEvent("Contact", {
       content_name: `Chat WA - ${contextName}`,
       content_category: "WhatsApp",
+    });
+
+    trackAnalyticsEvent({
+      event_name: "Contact",
+      page_path: pathname,
+      property_title: contextName,
     });
   };
 

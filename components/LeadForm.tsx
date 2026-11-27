@@ -2,7 +2,8 @@
 
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { trackEvent } from "@/lib/meta-pixel";
+import { trackEvent as trackAnalyticsEvent } from "@/lib/analytics";
+import { trackEvent as trackMetaEvent } from "@/lib/meta-pixel";
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -82,8 +83,13 @@ export default function LeadForm({
         return;
       }
 
-      trackEvent("Lead", {
+      trackMetaEvent("Lead", {
         content_name: propertyTitle || "General Inquiry",
+      });
+
+      trackAnalyticsEvent({
+        event_name: "Lead",
+        property_title: propertyTitle || "General Inquiry",
       });
 
       setName("");

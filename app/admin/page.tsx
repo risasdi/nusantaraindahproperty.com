@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
+import AdminAnalyticsOverview from "@/components/admin/AdminAnalyticsOverview";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import { getCurrentAdminProfile } from "@/lib/admin-auth";
+import { getAdminAnalyticsOverviewData } from "@/lib/analytics-server";
 import type { DbProperty } from "@/lib/properties";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,16 +20,28 @@ export default async function AdminPage() {
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("properties")
-    .select("*")
-    .order("created_at", { ascending: false });
+
+  const [propertiesRes, analyticsData] = await Promise.all([
+    supabase
+      .from("properties")
+      .select("*")
+      .order("created_at", { ascending: false }),
+    getAdminAnalyticsOverviewData(),
+  ]);
 
   return (
-    <AdminDashboard
-      initialProperties={(data as DbProperty[] | null) ?? []}
-      initialError={error?.message ?? null}
-      showKpiCards
-    />
+    <div className="space-y-8">
+      <AdminAnalyticsOverview
+        initialEvents={analyticsData.events}
+        initialError={analyticsData.error}
+        referenceTimestamp={analyticsData.referenceTimestamp}
+      />
+
+      <AdminDashboard
+        initialProperties={(propertiesRes.data as DbProperty[] | null) ?? []}
+        initialError={propertiesRes.error?.message ?? null}
+        showKpiCards
+      />
+    </div>
   );
 }

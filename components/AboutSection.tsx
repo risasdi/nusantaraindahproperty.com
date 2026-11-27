@@ -20,7 +20,7 @@ const ABOUT_POINTS = [
 
 export default function AboutSection() {
   return (
-    <section id="about" className="about-section">
+    <section id="about" className="about-section scroll-mt-24">
       <div className="about-content">
         <FadeUp className="about-copy" delay={0.1}>
           <span className="section-tag">TENTANG KAMI</span>

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { trackEvent } from "@/lib/meta-pixel";
+import { trackEvent as trackAnalyticsEvent } from "@/lib/analytics";
+import { trackEvent as trackMetaEvent } from "@/lib/meta-pixel";
 
 const NAV_ITEMS = [
   { label: "Beranda", href: "/#home", sectionId: "home" },
@@ -59,16 +60,50 @@ export default function Navbar() {
     return sectionId === null && pathname === href;
   };
 
-  const closeMenu = () => setMenuOpen(false);
+  const closeMenu = () => {
+    setMenuOpen(false);
+    if (typeof document !== "undefined") {
+      document.body.style.overflow = "";
+    }
+  };
+
+  const handleSectionNavigation = (
+    e: MouseEvent<HTMLAnchorElement>,
+    targetId: string | null
+  ) => {
+    closeMenu();
+
+    if (pathname !== "/" || !targetId) {
+      return;
+    }
+
+    e.preventDefault();
+
+    if (targetId === "home") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.history.replaceState(null, "", "/");
+      setActiveSection("home");
+      return;
+    }
+
+    const targetElement = document.getElementById(targetId);
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.history.replaceState(null, "", `/#${targetId}`);
+      if (targetId !== "contact") {
+        setActiveSection(targetId);
+      }
+    }
+  };
 
   return (
-    <nav className="navbar">
+    <nav className="navbar z-[999] pointer-events-auto">
       <div className="logo-container">
         <Link
           href="/"
           className="nav-logo-link"
           aria-label="Kembali ke halaman utama"
-          onClick={closeMenu}
+          onClick={(e) => handleSectionNavigation(e, "home")}
         >
           {!logoError ? (
             <Image
@@ -105,9 +140,11 @@ export default function Navbar() {
               <Link
                 href={item.href}
                 className={
-                  isLinkActive(item.href, item.sectionId) ? "active-link" : undefined
+                  isLinkActive(item.href, item.sectionId)
+                    ? "active-link"
+                    : undefined
                 }
-                onClick={closeMenu}
+                onClick={(e) => handleSectionNavigation(e, item.sectionId)}
               >
                 {item.label}
               </Link>
@@ -117,11 +154,16 @@ export default function Navbar() {
             <Link
               href="/#contact"
               className="nav-cta"
-              onClick={() => {
-                trackEvent("Contact", {
+              onClick={(e) => {
+                trackMetaEvent("Contact", {
                   content_name: "Navbar - Hubungi Agen",
                 });
-                closeMenu();
+                trackAnalyticsEvent({
+                  event_name: "Contact",
+                  page_path: pathname,
+                  property_title: "Navbar - Hubungi Agen",
+                });
+                handleSectionNavigation(e, "contact");
               }}
             >
               Hubungi Agen
