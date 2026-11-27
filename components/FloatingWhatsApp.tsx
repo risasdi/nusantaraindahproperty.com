@@ -2,6 +2,10 @@
 
 import { usePathname } from "next/navigation";
 import { trackEvent } from "@/lib/meta-pixel";
+import {
+  buildMarketingWhatsAppUrl,
+  DEFAULT_SITE_SETTINGS,
+} from "@/lib/site-settings";
 
 const ROUTE_LABELS: Record<string, string> = {
   "/": "Beranda",
@@ -14,8 +18,15 @@ const ROUTE_LABELS: Record<string, string> = {
   "/taman-katapang-indah": "Taman Indah Katapang",
 };
 
-export default function FloatingWhatsApp() {
+interface FloatingWhatsAppProps {
+  whatsappNumber?: string;
+}
+
+export default function FloatingWhatsApp({
+  whatsappNumber = DEFAULT_SITE_SETTINGS.whatsapp_number,
+}: FloatingWhatsAppProps) {
   const pathname = usePathname();
+  const waHref = buildMarketingWhatsAppUrl(whatsappNumber);
 
   const handleClick = () => {
     const knownLabel = ROUTE_LABELS[pathname];
@@ -37,7 +48,7 @@ export default function FloatingWhatsApp() {
 
   return (
     <a
-      href="https://wa.me/6285121186505"
+      href={waHref}
       target="_blank"
       rel="noreferrer"
       className="floating-wa"

@@ -8,9 +8,15 @@ interface CalculationResult {
   cicilanBulanan: number;
 }
 
-export default function KprCalculator() {
+interface KprCalculatorProps {
+  defaultInterestRate?: number;
+}
+
+export default function KprCalculator({
+  defaultInterestRate = 5.5,
+}: KprCalculatorProps) {
   const [hargaInput, setHargaInput] = useState("");
-  const [bungaInput, setBungaInput] = useState("");
+  const [bungaInput, setBungaInput] = useState(String(defaultInterestRate));
   const [tenorInput, setTenorInput] = useState("");
   const [result, setResult] = useState<CalculationResult | null>(null);
 

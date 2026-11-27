@@ -10,11 +10,13 @@ import {
   getFeaturedProperties,
   getPropertyTypeOptions,
 } from "@/lib/properties";
+import { getSiteSettings } from "@/lib/site-settings";
 
 export default async function HomePage() {
-  const [featuredProperties, typeOptions] = await Promise.all([
+  const [featuredProperties, typeOptions, siteSettings] = await Promise.all([
     getFeaturedProperties(),
     getPropertyTypeOptions(),
+    getSiteSettings(),
   ]);
 
   return (
@@ -25,8 +27,11 @@ export default async function HomePage() {
       <AboutSection />
       <FeaturedPropertiesSection properties={featuredProperties} />
       <StatsSection />
-      <ContactSection />
-      <SocialSection />
+      <ContactSection settings={siteSettings} />
+      <SocialSection
+        instagramUrl={siteSettings.instagram_url}
+        tiktokUrl={siteSettings.tiktok_url}
+      />
     </>
   );
 }

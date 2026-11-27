@@ -5,20 +5,10 @@ import AdminSettingsDashboard, {
 } from "@/components/admin/AdminSettingsDashboard";
 import { getCurrentAdminProfile } from "@/lib/admin-auth";
 import { getRolePermissions } from "@/lib/rbac";
+import { DEFAULT_SITE_SETTINGS } from "@/lib/site-settings";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
-
-const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
-  id: 1,
-  company_name: "Nusantara Indah Property",
-  whatsapp_number: "6285121186505",
-  office_address: "Bandung, Jawa Barat",
-  operating_hours: "Senin - Minggu, 08.00 - 17.00 WIB",
-  kpr_interest_rate: 5.5,
-  instagram_url: "https://www.instagram.com/nusantaraindahproperty",
-  tiktok_url: "https://www.tiktok.com/@nusantaraindahproperty",
-};
 
 export default async function AdminSettingsPage() {
   const profile = await getCurrentAdminProfile();

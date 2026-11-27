@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import FadeUp from "@/components/FadeUp";
 import KprCalculator from "@/components/KprCalculator";
+import { getSiteSettings } from "@/lib/site-settings";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Panduan & Simulasi KPR | Nusantara Indah Property",
@@ -15,7 +18,9 @@ const PARTNER_BANKS = [
   "Bank Tabungan Negara (BTN)",
 ] as const;
 
-export default function KprPage() {
+export default async function KprPage() {
+  const settings = await getSiteSettings();
+
   return (
     <div className="kpr-page">
       <header className="kpr-header">
@@ -62,7 +67,7 @@ export default function KprPage() {
           </div>
         </section>
 
-        <KprCalculator />
+        <KprCalculator defaultInterestRate={settings.kpr_interest_rate} />
       </main>
     </div>
   );
