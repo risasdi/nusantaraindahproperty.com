@@ -159,8 +159,15 @@ export default function AdminShell({ profile, children }: AdminShellProps) {
 
   useEffect(() => {
     document.body.style.overflow = sidebarOpen ? "hidden" : "";
+    if (!sidebarOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSidebarOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
       document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [sidebarOpen]);
 
@@ -196,7 +203,7 @@ export default function AdminShell({ profile, children }: AdminShellProps) {
   };
 
   const renderSidebarNav = () => (
-    <div className="flex flex-col h-full bg-[#063D36] text-white select-none">
+    <div className="flex flex-col h-full bg-[#0A1412] text-white border-r border-[#C8A15A]/16 select-none">
       {/* Brand Header */}
       <div className="h-16 px-5 flex items-center justify-between border-b border-white/10 shrink-0">
         <Link
@@ -207,16 +214,16 @@ export default function AdminShell({ profile, children }: AdminShellProps) {
           <Image
             src="/images/logo/logo-10.png"
             alt="Nusantara Indah Property"
-            width={36}
-            height={36}
-            className="rounded-lg shrink-0"
+            width={34}
+            height={34}
+            className="rounded-lg shrink-0 border border-[#C8A15A]/30"
             priority
           />
           <div className="min-w-0">
-            <span className="block font-serif text-sm font-bold tracking-[0.12em] text-[#C8A15A] leading-tight truncate">
+            <span className="block font-serif text-sm font-semibold tracking-[0.14em] text-[#C8A15A] leading-tight truncate">
               NUSANTARA
             </span>
-            <span className="block text-[10px] font-medium tracking-[0.2em] text-white/65 uppercase truncate">
+            <span className="block text-[10px] font-medium tracking-[0.2em] text-white/50 uppercase truncate">
               Admin Panel
             </span>
           </div>
@@ -225,7 +232,7 @@ export default function AdminShell({ profile, children }: AdminShellProps) {
         <button
           type="button"
           onClick={() => setSidebarOpen(false)}
-          className="lg:hidden p-1.5 rounded-lg text-white/75 hover:text-white hover:bg-white/10 transition cursor-pointer"
+          className="lg:hidden p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition cursor-pointer"
           aria-label="Tutup menu sidebar"
         >
           <CloseIcon className="w-5 h-5" />
@@ -237,7 +244,7 @@ export default function AdminShell({ profile, children }: AdminShellProps) {
         className="flex-1 px-3 py-5 space-y-1 overflow-y-auto"
         aria-label="Menu Admin"
       >
-        <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-white/45">
+        <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/40">
           Menu Utama
         </p>
 
@@ -255,8 +262,8 @@ export default function AdminShell({ profile, children }: AdminShellProps) {
               onClick={() => setSidebarOpen(false)}
               className={`group flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
                 isActive
-                  ? "bg-[#C8A15A]/15 text-[#C8A15A] font-semibold shadow-[inset_3px_0_0_#C8A15A]"
-                  : "text-white/80 hover:text-white hover:bg-white/8"
+                  ? "bg-[#C8A15A]/15 text-[#E6C98F] font-semibold shadow-[inset_3px_0_0_#C8A15A] border border-[#C8A15A]/20"
+                  : "text-white/70 hover:text-white hover:bg-white/[0.05] border border-transparent"
               }`}
             >
               <span className="flex items-center gap-3 min-w-0">
@@ -264,7 +271,7 @@ export default function AdminShell({ profile, children }: AdminShellProps) {
                   className={`w-[18px] h-[18px] shrink-0 ${
                     isActive
                       ? "text-[#C8A15A]"
-                      : "text-white/60 group-hover:text-white"
+                      : "text-white/45 group-hover:text-white/90"
                   }`}
                 />
                 <span className="truncate">{item.label}</span>
@@ -285,7 +292,7 @@ export default function AdminShell({ profile, children }: AdminShellProps) {
           href="/"
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-white/80 hover:text-white hover:bg-white/8 transition"
+          className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-white/75 hover:text-white hover:bg-white/[0.06] transition"
         >
           <ExternalLinkIcon className="w-[18px] h-[18px] text-[#C8A15A] shrink-0" />
           <span>Lihat Website</span>
@@ -295,7 +302,7 @@ export default function AdminShell({ profile, children }: AdminShellProps) {
           type="button"
           onClick={handleLogout}
           disabled={loggingOut}
-          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-red-200 hover:text-white hover:bg-red-500/25 disabled:opacity-50 transition cursor-pointer"
+          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-rose-300 hover:text-white hover:bg-rose-500/20 disabled:opacity-50 transition cursor-pointer"
         >
           <LogOutIcon className="w-[18px] h-[18px] shrink-0" />
           <span>{loggingOut ? "Keluar..." : "Logout"}</span>
@@ -313,9 +320,9 @@ export default function AdminShell({ profile, children }: AdminShellProps) {
         openCreateProperty,
       }}
     >
-      <div className="min-h-screen bg-slate-50 text-slate-900">
+      <div className="min-h-screen bg-[#070D0C] text-white">
         {/* Desktop Fixed Sidebar */}
-        <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:block lg:w-64 shadow-xl">
+        <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:block lg:w-64">
           {renderSidebarNav()}
         </aside>
 
@@ -323,7 +330,7 @@ export default function AdminShell({ profile, children }: AdminShellProps) {
         {sidebarOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div
-              className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
+              className="fixed inset-0 bg-black/75 backdrop-blur-xs"
               onClick={() => setSidebarOpen(false)}
               aria-hidden="true"
             />
@@ -335,44 +342,44 @@ export default function AdminShell({ profile, children }: AdminShellProps) {
 
         {/* Main Content Column */}
         <div className="lg:pl-64 flex flex-col min-h-screen">
-          {/* White Topbar */}
-          <header className="sticky top-0 z-30 h-16 bg-white/95 backdrop-blur-sm border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+          {/* Dark Topbar */}
+          <header className="sticky top-0 z-30 h-16 bg-[#0A1412]/92 backdrop-blur-md border-b border-white/10 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 -ml-2 rounded-xl text-slate-600 hover:text-[#063D36] hover:bg-slate-100 transition cursor-pointer"
+                className="lg:hidden p-2 -ml-2 rounded-xl text-white/75 hover:text-[#C8A15A] hover:bg-white/[0.06] transition cursor-pointer"
                 aria-label="Buka menu navigasi"
               >
                 <MenuIcon className="w-5 h-5" />
               </button>
 
               <div className="min-w-0">
-                <h1 className="text-base sm:text-lg font-serif font-bold text-[#063D36] truncate leading-tight">
+                <h1 className="font-sans text-base sm:text-lg font-bold text-white truncate leading-tight">
                   {pageMeta.title}
                 </h1>
-                <p className="hidden sm:block text-xs text-slate-500 truncate">
+                <p className="hidden sm:block text-xs text-white/50 truncate">
                   {pageMeta.subtitle}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
               {/* Admin Profile + Role Badge */}
-              <div className="flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-full bg-slate-50 border border-slate-200/90">
-                <span className="w-7 h-7 rounded-full bg-[#063D36] text-[#C8A15A] text-xs font-bold flex items-center justify-center shrink-0">
+              <div className="flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-full bg-white/[0.04] border border-white/12">
+                <span className="w-7 h-7 rounded-full bg-[#C8A15A] text-[#070D0C] text-xs font-bold flex items-center justify-center shrink-0">
                   {userInitial}
                 </span>
                 <div className="hidden md:flex flex-col leading-tight min-w-0">
-                  <span className="text-xs font-semibold text-slate-800 max-w-[150px] truncate">
+                  <span className="text-xs font-semibold text-white max-w-[150px] truncate">
                     {displayName}
                   </span>
-                  <span className="text-[10px] text-slate-500 max-w-[150px] truncate">
+                  <span className="text-[10px] text-white/50 max-w-[150px] truncate">
                     {profile.email}
                   </span>
                 </div>
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide whitespace-nowrap ${roleBadge.badgeClass}`}
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide whitespace-nowrap ${roleBadge.badgeClass}`}
                 >
                   {roleBadge.label}
                 </span>
@@ -383,9 +390,9 @@ export default function AdminShell({ profile, children }: AdminShellProps) {
                 <button
                   type="button"
                   onClick={openCreateProperty}
-                  className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-[#063D36] hover:bg-[#052e29] text-white text-xs sm:text-sm font-semibold shadow-xs transition cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full bg-[#C8A15A] hover:bg-[#D9B56F] text-[#070D0C] text-xs sm:text-sm font-bold transition shadow-[0_6px_18px_rgba(200,161,90,0.22)] cursor-pointer"
                 >
-                  <PlusIcon className="w-4 h-4 text-[#C8A15A]" />
+                  <PlusIcon className="w-4 h-4 shrink-0" />
                   <span className="hidden sm:inline">Tambah Properti</span>
                   <span className="sm:hidden">Tambah</span>
                 </button>

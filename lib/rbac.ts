@@ -89,30 +89,31 @@ export function getRoleBadgeMeta(role: AdminRole): RoleBadgeMeta {
       return {
         label: "Super Admin",
         badgeClass:
-          "bg-[#C8A15A]/20 text-[#8F6822] ring-1 ring-inset ring-[#C8A15A]/45",
+          "bg-[#C8A15A]/18 text-[#E6C98F] ring-1 ring-inset ring-[#C8A15A]/40",
       };
     case "head_sales":
       return {
         label: "Head Sales",
         badgeClass:
-          "bg-indigo-50 text-indigo-800 ring-1 ring-inset ring-indigo-600/20",
+          "bg-indigo-500/15 text-indigo-200 ring-1 ring-inset ring-indigo-400/35",
       };
     case "property_admin":
       return {
         label: "Property Admin",
         badgeClass:
-          "bg-emerald-50 text-emerald-800 ring-1 ring-inset ring-emerald-600/20",
+          "bg-emerald-500/15 text-emerald-200 ring-1 ring-inset ring-emerald-400/35",
       };
     case "marketing":
       return {
         label: "Marketing",
-        badgeClass: "bg-sky-50 text-sky-800 ring-1 ring-inset ring-sky-600/20",
+        badgeClass:
+          "bg-sky-500/15 text-sky-200 ring-1 ring-inset ring-sky-400/35",
       };
     case "sales":
       return {
         label: "Sales",
         badgeClass:
-          "bg-amber-50 text-amber-800 ring-1 ring-inset ring-amber-600/20",
+          "bg-amber-500/15 text-amber-200 ring-1 ring-inset ring-amber-400/35",
       };
   }
 }

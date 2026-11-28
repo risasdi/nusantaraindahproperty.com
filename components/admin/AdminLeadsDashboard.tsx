@@ -43,17 +43,17 @@ export interface DbLead {
 function getStatusSelectClasses(status: string): string {
   switch (status) {
     case "Baru":
-      return "bg-sky-50 text-sky-800 border-sky-200 focus:border-sky-400";
+      return "bg-sky-500/15 text-sky-200 border-sky-400/35 focus:border-sky-300";
     case "Dihubungi":
-      return "bg-amber-50 text-amber-800 border-amber-200 focus:border-amber-400";
+      return "bg-amber-500/15 text-amber-200 border-amber-400/35 focus:border-amber-300";
     case "Survei":
-      return "bg-indigo-50 text-indigo-800 border-indigo-200 focus:border-indigo-400";
+      return "bg-indigo-500/15 text-indigo-200 border-indigo-400/35 focus:border-indigo-300";
     case "Closing":
-      return "bg-emerald-50 text-emerald-800 border-emerald-200 focus:border-emerald-400";
+      return "bg-emerald-500/15 text-emerald-200 border-emerald-400/35 focus:border-emerald-300";
     case "Batal":
-      return "bg-rose-50 text-rose-800 border-rose-200 focus:border-rose-400";
+      return "bg-rose-500/15 text-rose-200 border-rose-400/35 focus:border-rose-300";
     default:
-      return "bg-slate-50 text-slate-700 border-slate-200";
+      return "bg-white/[0.06] text-white/80 border-white/15";
   }
 }
 
@@ -103,13 +103,22 @@ export default function AdminLeadsDashboard({
       : null
   );
 
+  // Lock body scroll & close modal on Escape key
   useEffect(() => {
     if (!deleteTarget) return;
     document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !deleting) {
+        setDeleteTarget(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
       document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [deleteTarget]);
+  }, [deleteTarget, deleting]);
 
   const handleStatusChange = async (lead: DbLead, nextStatus: string) => {
     if (!canUpdateLeads) return;
@@ -136,7 +145,6 @@ export default function AdminLeadsDashboard({
       });
       router.refresh();
     } catch (err) {
-      // Revert optimistic update on failure
       setLeads((prev) =>
         prev.map((item) =>
           item.id === lead.id ? { ...item, status: prevStatus } : item
@@ -213,116 +221,116 @@ export default function AdminLeadsDashboard({
           role="status"
           className={`rounded-2xl px-5 py-3.5 flex items-center justify-between gap-4 border text-sm font-medium ${
             feedback.type === "success"
-              ? "bg-emerald-50 border-emerald-200 text-emerald-900"
-              : "bg-red-50 border-red-200 text-red-800"
+              ? "bg-emerald-500/15 border-emerald-400/35 text-emerald-100"
+              : "bg-rose-500/15 border-rose-400/35 text-rose-100"
           }`}
         >
           <span>{feedback.message}</span>
           <button
             type="button"
             onClick={() => setFeedback(null)}
-            className="text-xs font-bold opacity-70 hover:opacity-100 cursor-pointer shrink-0"
+            className="text-xs font-bold opacity-80 hover:opacity-100 cursor-pointer shrink-0"
           >
             Tutup
           </button>
         </div>
       )}
 
-      {/* Row 1: 4 KPI Stat Cards */}
+      {/* Row 1: 4 Dark Glass KPI Stat Cards */}
       <section
         aria-label="Ringkasan statistik leads"
         className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5"
       >
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition">
+        <div className="bg-[#0B1513] rounded-2xl p-5 border border-[#C8A15A]/18 hover:border-[#C8A15A]/38 transition">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-white/55">
                 Total Leads
               </p>
-              <p className="text-3xl font-serif font-bold text-[#063D36] mt-2">
+              <p className="text-3xl font-sans font-bold text-white mt-2">
                 {totalLeads}
               </p>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-[#063D36]/10 text-[#063D36] flex items-center justify-center shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-[#C8A15A]/15 border border-[#C8A15A]/30 text-[#C8A15A] flex items-center justify-center shrink-0">
               <UsersIcon className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100">
+          <p className="text-xs text-white/50 mt-3 pt-3 border-t border-white/10">
             Seluruh calon buyer yang masuk dari website
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition">
+        <div className="bg-[#0B1513] rounded-2xl p-5 border border-[#C8A15A]/18 hover:border-[#C8A15A]/38 transition">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-white/55">
                 Leads Baru
               </p>
-              <p className="text-3xl font-serif font-bold text-sky-700 mt-2">
+              <p className="text-3xl font-sans font-bold text-sky-400 mt-2">
                 {newLeads}
               </p>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-sky-500/15 border border-sky-400/25 text-sky-300 flex items-center justify-center shrink-0">
               <SparklesIcon className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100">
+          <p className="text-xs text-white/50 mt-3 pt-3 border-t border-white/10">
             Menunggu respon pertama tim marketing
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition">
+        <div className="bg-[#0B1513] rounded-2xl p-5 border border-[#C8A15A]/18 hover:border-[#C8A15A]/38 transition">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-white/55">
                 Jadwal Survei
               </p>
-              <p className="text-3xl font-serif font-bold text-indigo-700 mt-2">
+              <p className="text-3xl font-sans font-bold text-indigo-300 mt-2">
                 {surveyLeads}
               </p>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-indigo-500/15 border border-indigo-400/25 text-indigo-300 flex items-center justify-center shrink-0">
               <CalendarIcon className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100">
+          <p className="text-xs text-white/50 mt-3 pt-3 border-t border-white/10">
             Calon pembeli dalam tahap survei lokasi
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition">
+        <div className="bg-[#0B1513] rounded-2xl p-5 border border-[#C8A15A]/18 hover:border-[#C8A15A]/38 transition">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-white/55">
                 Closing
               </p>
-              <p className="text-3xl font-serif font-bold text-emerald-700 mt-2">
+              <p className="text-3xl font-sans font-bold text-emerald-400 mt-2">
                 {closingLeads}
               </p>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-400/25 text-emerald-300 flex items-center justify-center shrink-0">
               <AwardIcon className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100">
+          <p className="text-xs text-white/50 mt-3 pt-3 border-t border-white/10">
             Transaksi berhasil ditutup
           </p>
         </div>
       </section>
 
-      {/* Row 2: Leads CRM Table */}
-      <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <div className="p-5 border-b border-slate-200/80 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      {/* Row 2: Dark Leads CRM Table */}
+      <section className="bg-[#0B1513] rounded-2xl border border-white/10 overflow-hidden">
+        <div className="p-5 border-b border-white/10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2.5">
-              <h2 className="text-lg font-serif font-bold text-[#063D36]">
+              <h2 className="font-sans text-lg font-bold text-white">
                 Daftar Leads &amp; Pesan Masuk
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C8A15A]/15 text-[#E6C98F] border border-[#C8A15A]/30">
                 {filteredLeads.length} lead
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-white/50 mt-0.5">
               Pantau minat calon buyer, perbarui status follow-up, dan hubungi
               langsung via WhatsApp.
             </p>
@@ -331,13 +339,13 @@ export default function AdminLeadsDashboard({
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             {/* Search Input */}
             <div className="relative flex-1 sm:w-64">
-              <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <SearchIcon className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="search"
                 placeholder="Cari nama, WA, atau properti..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-10 pl-10 pr-3.5 rounded-xl border border-slate-200 bg-slate-50/70 text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15 transition"
+                className="w-full h-10 pl-10 pr-3.5 rounded-xl border border-white/15 bg-[#070D0C] text-sm text-white placeholder:text-white/35 focus:outline-none focus:border-[#C8A15A] focus:ring-2 focus:ring-[#C8A15A]/20 transition"
               />
             </div>
 
@@ -346,11 +354,17 @@ export default function AdminLeadsDashboard({
               aria-label="Filter status leads"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-10 px-3.5 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-700 focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15 transition"
+              className="h-10 px-3.5 rounded-xl border border-white/15 bg-[#070D0C] text-sm font-medium text-white focus:outline-none focus:border-[#C8A15A] focus:ring-2 focus:ring-[#C8A15A]/20 transition cursor-pointer"
             >
-              <option value="all">Semua Status ({totalLeads})</option>
+              <option value="all" className="bg-[#0A1412] text-white">
+                Semua Status ({totalLeads})
+              </option>
               {LEAD_STATUSES.map((status) => (
-                <option key={status} value={status}>
+                <option
+                  key={status}
+                  value={status}
+                  className="bg-[#0A1412] text-white"
+                >
                   {status} ({leads.filter((l) => l.status === status).length})
                 </option>
               ))}
@@ -361,7 +375,7 @@ export default function AdminLeadsDashboard({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/90 border-b border-slate-200/80 text-slate-500 text-[11px] uppercase tracking-wider">
+              <tr className="bg-[#0F1D1A] border-b border-white/10 text-white/55 text-[11px] uppercase tracking-wider">
                 <th className="py-3.5 px-5 font-semibold">Tanggal</th>
                 <th className="py-3.5 px-4 font-semibold">Nama &amp; No. WA</th>
                 <th className="py-3.5 px-4 font-semibold">Minat Properti</th>
@@ -370,19 +384,19 @@ export default function AdminLeadsDashboard({
                 <th className="py-3.5 px-5 font-semibold text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
+            <tbody className="divide-y divide-white/8 text-sm">
               {filteredLeads.length === 0 ? (
                 <tr>
                   <td
                     colSpan={6}
-                    className="py-16 px-6 text-center text-slate-500"
+                    className="py-16 px-6 text-center text-white/55"
                   >
-                    <p className="font-medium text-slate-700">
+                    <p className="font-semibold text-white/85">
                       {leads.length === 0
                         ? "Belum ada leads yang masuk"
                         : "Tidak ada leads yang cocok dengan filter"}
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-white/50 mt-1">
                       {leads.length === 0
                         ? "Leads baru dari formulir Homepage dan halaman Detail Properti akan otomatis muncul di sini."
                         : "Coba ubah kata kunci pencarian atau filter status."}
@@ -396,40 +410,38 @@ export default function AdminLeadsDashboard({
                   return (
                     <tr
                       key={lead.id}
-                      className="hover:bg-slate-50/70 transition-colors align-top"
+                      className="hover:bg-white/[0.03] transition-colors align-top"
                     >
                       {/* Tanggal & Source */}
                       <td className="py-4 px-5 whitespace-nowrap">
-                        <p className="text-xs font-semibold text-slate-700">
+                        <p className="text-xs font-semibold text-white/85">
                           {formatDateTimeWIB(lead.created_at)}
                         </p>
-                        <span className="inline-block mt-1 px-2 py-0.5 rounded-md bg-slate-100 text-[10px] font-semibold text-slate-500">
+                        <span className="inline-block mt-1 px-2 py-0.5 rounded-md bg-white/[0.06] border border-white/10 text-[10px] font-semibold text-white/60">
                           {lead.source || "Website"}
                         </span>
                       </td>
 
                       {/* Nama & No. WA */}
                       <td className="py-4 px-4 whitespace-nowrap">
-                        <p className="font-semibold text-slate-900">
-                          {lead.name}
-                        </p>
-                        <p className="text-xs text-slate-500 font-mono mt-0.5">
+                        <p className="font-semibold text-white">{lead.name}</p>
+                        <p className="text-xs text-[#C8A15A] font-mono mt-0.5">
                           {lead.whatsapp}
                         </p>
                       </td>
 
                       {/* Minat Properti */}
                       <td className="py-4 px-4">
-                        <p className="font-medium text-[#063D36] min-w-[160px] max-w-[220px]">
+                        <p className="font-medium text-white/90 min-w-[160px] max-w-[220px]">
                           {lead.property_title || "General Inquiry"}
                         </p>
                       </td>
 
                       {/* Pesan */}
                       <td className="py-4 px-4">
-                        <p className="text-xs text-slate-600 leading-relaxed min-w-[200px] max-w-[300px] whitespace-pre-line">
+                        <p className="text-xs text-white/70 leading-relaxed min-w-[200px] max-w-[300px] whitespace-pre-line">
                           {lead.message?.trim() || (
-                            <span className="text-slate-400 italic">
+                            <span className="text-white/35 italic">
                               Tidak ada pesan tambahan
                             </span>
                           )}
@@ -451,7 +463,11 @@ export default function AdminLeadsDashboard({
                             )}`}
                           >
                             {LEAD_STATUSES.map((status) => (
-                              <option key={status} value={status}>
+                              <option
+                                key={status}
+                                value={status}
+                                className="bg-[#0A1412] text-white"
+                              >
                                 {status}
                               </option>
                             ))}
@@ -474,7 +490,7 @@ export default function AdminLeadsDashboard({
                             href={buildWhatsAppUrl(lead)}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#16A34A] hover:bg-[#15803D] !text-white text-xs font-semibold transition shadow-xs"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#16A34A] hover:bg-[#15803D] !text-white text-xs font-semibold transition"
                           >
                             <WhatsAppIcon className="w-3.5 h-3.5 text-white shrink-0" />
                             <span className="text-white">Chat WA</span>
@@ -484,7 +500,7 @@ export default function AdminLeadsDashboard({
                               type="button"
                               onClick={() => setDeleteTarget(lead)}
                               title="Hapus lead"
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 text-xs font-semibold hover:bg-red-100 transition cursor-pointer"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-500/15 border border-rose-400/25 text-rose-200 text-xs font-semibold hover:bg-rose-500/25 transition cursor-pointer"
                             >
                               <TrashIcon className="w-3.5 h-3.5" />
                               <span>Hapus</span>
@@ -501,22 +517,26 @@ export default function AdminLeadsDashboard({
         </div>
       </section>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal (Escape + backdrop click to close) */}
       {deleteTarget && (
         <div
-          className="fixed inset-0 z-[9999] bg-slate-900/65 backdrop-blur-xs overflow-y-auto"
+          className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-xs overflow-y-auto"
           role="dialog"
           aria-modal="true"
           aria-label="Konfirmasi hapus lead"
+          onClick={() => !deleting && setDeleteTarget(null)}
         >
           <div className="flex min-h-full items-center justify-center px-4 py-8">
-            <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-200">
-              <h3 className="text-lg font-serif font-bold text-[#063D36]">
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[#0B1513] w-full max-w-md rounded-2xl p-6 shadow-2xl border border-[#C8A15A]/25"
+            >
+              <h3 className="font-sans text-lg font-bold text-white">
                 Hapus Data Lead?
               </h3>
-              <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+              <p className="text-sm text-white/65 mt-2 leading-relaxed">
                 Anda yakin ingin menghapus data lead atas nama{" "}
-                <strong className="text-slate-900">{deleteTarget.name}</strong>?
+                <strong className="text-white">{deleteTarget.name}</strong>?
                 Tindakan ini tidak dapat dibatalkan.
               </p>
               <div className="mt-6 flex items-center justify-end gap-3">
@@ -524,7 +544,7 @@ export default function AdminLeadsDashboard({
                   type="button"
                   onClick={() => setDeleteTarget(null)}
                   disabled={deleting}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                  className="px-4 py-2 rounded-full border border-white/15 bg-white/[0.04] text-sm font-semibold text-white/80 hover:bg-white/[0.1] cursor-pointer"
                 >
                   Batal
                 </button>
@@ -532,7 +552,7 @@ export default function AdminLeadsDashboard({
                   type="button"
                   onClick={handleConfirmDelete}
                   disabled={deleting}
-                  className="px-5 py-2 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 disabled:opacity-60 cursor-pointer"
+                  className="px-5 py-2 rounded-full bg-rose-600 text-white text-sm font-bold hover:bg-rose-500 disabled:opacity-60 cursor-pointer"
                 >
                   {deleting ? "Menghapus..." : "Ya, Hapus"}
                 </button>

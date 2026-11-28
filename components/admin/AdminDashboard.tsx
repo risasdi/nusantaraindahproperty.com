@@ -53,16 +53,43 @@ function extractArea(location: string): string {
   return firstSegment;
 }
 
+function formatBillionsValue(amount: number): string {
+  const val = (amount / 1_000_000_000).toFixed(
+    amount % 1_000_000_000 === 0 ? 0 : 1
+  );
+  return val.replace(".", ",");
+}
+
 function formatCompactPrice(amount: number): string {
   if (amount >= 1_000_000_000) {
-    const val = (amount / 1_000_000_000).toFixed(amount % 1_000_000_000 === 0 ? 0 : 1);
-    return `Rp ${val.replace(".", ",")} M`;
+    return `Rp ${formatBillionsValue(amount)} M`;
   }
   if (amount >= 1_000_000) {
     const val = Math.round(amount / 1_000_000);
     return `Rp ${val} Jt`;
   }
   return formatRupiah(amount);
+}
+
+function formatCompactPriceRange(minPrice: number, maxPrice: number): string {
+  if (minPrice === maxPrice) {
+    return formatCompactPrice(minPrice);
+  }
+  if (
+    minPrice >= 1_000_000 &&
+    minPrice < 1_000_000_000 &&
+    maxPrice >= 1_000_000 &&
+    maxPrice < 1_000_000_000
+  ) {
+    return `Rp ${Math.round(minPrice / 1_000_000)}–${Math.round(maxPrice / 1_000_000)} Jt`;
+  }
+  if (minPrice >= 1_000_000_000 && maxPrice >= 1_000_000_000) {
+    return `Rp ${formatBillionsValue(minPrice)}–${formatBillionsValue(maxPrice)} M`;
+  }
+  if (minPrice >= 1_000_000 && maxPrice >= 1_000_000_000) {
+    return `Rp ${Math.round(minPrice / 1_000_000)} Jt–${formatBillionsValue(maxPrice)} M`;
+  }
+  return `${formatCompactPrice(minPrice)} – ${formatCompactPrice(maxPrice)}`;
 }
 
 interface PropertyFormState {
@@ -127,6 +154,12 @@ interface AdminDashboardProps {
   autoOpenCreate?: boolean;
 }
 
+const INPUT_CLASS =
+  "w-full h-11 px-3.5 rounded-xl border border-white/15 bg-[#070D0C] text-sm text-white placeholder:text-white/35 focus:outline-none focus:border-[#C8A15A] focus:ring-2 focus:ring-[#C8A15A]/20 transition";
+
+const TEXTAREA_CLASS =
+  "w-full p-3.5 rounded-xl border border-white/15 bg-[#070D0C] text-sm text-white placeholder:text-white/35 focus:outline-none focus:border-[#C8A15A] focus:ring-2 focus:ring-[#C8A15A]/20 transition";
+
 export default function AdminDashboard({
   initialProperties,
   initialError,
@@ -184,6 +217,13 @@ export default function AdminDashboard({
     setIsModalOpen(true);
   }, [canManageProperties]);
 
+  const closeModal = useCallback(() => {
+    if (saving || uploadingImages) return;
+    setIsModalOpen(false);
+    setEditingProperty(null);
+    setFormError(null);
+  }, [saving, uploadingImages]);
+
   useEffect(() => {
     if (!canManageProperties) {
       registerCreateHandler(null);
@@ -193,13 +233,26 @@ export default function AdminDashboard({
     return () => registerCreateHandler(null);
   }, [canManageProperties, registerCreateHandler, openCreateModal]);
 
+  // Lock body scroll & close modals via Escape key
   useEffect(() => {
     if (!isModalOpen && !deleteTarget) return;
     document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (deleteTarget && !deleting) {
+        setDeleteTarget(null);
+      } else if (isModalOpen && !saving && !uploadingImages) {
+        closeModal();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
       document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isModalOpen, deleteTarget]);
+  }, [isModalOpen, deleteTarget, deleting, saving, uploadingImages, closeModal]);
 
   const reloadProperties = async () => {
     const supabase = createClient();
@@ -225,13 +278,6 @@ export default function AdminDashboard({
     setManualImageUrl("");
     setFormError(null);
     setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    if (saving || uploadingImages) return;
-    setIsModalOpen(false);
-    setEditingProperty(null);
-    setFormError(null);
   };
 
   const handleTitleChange = (value: string) => {
@@ -503,9 +549,7 @@ export default function AdminDashboard({
   const priceRangeDisplay =
     prices.length === 0
       ? "Rp 0"
-      : minPrice === maxPrice
-        ? formatCompactPrice(minPrice)
-        : `${formatCompactPrice(minPrice)} – ${formatCompactPrice(maxPrice)}`;
+      : formatCompactPriceRange(minPrice, maxPrice);
 
   // Dynamic area options (text before the first comma in location)
   const areaOptions = Array.from(
@@ -548,103 +592,103 @@ export default function AdminDashboard({
           role="status"
           className={`rounded-2xl px-5 py-3.5 flex items-center justify-between gap-4 border text-sm font-medium ${
             feedback.type === "success"
-              ? "bg-emerald-50 border-emerald-200 text-emerald-900"
-              : "bg-red-50 border-red-200 text-red-800"
+              ? "bg-emerald-500/15 border-emerald-400/35 text-emerald-100"
+              : "bg-rose-500/15 border-rose-400/35 text-rose-100"
           }`}
         >
           <span>{feedback.message}</span>
           <button
             type="button"
             onClick={() => setFeedback(null)}
-            className="text-xs font-bold opacity-70 hover:opacity-100 cursor-pointer shrink-0"
+            className="text-xs font-bold opacity-80 hover:opacity-100 cursor-pointer shrink-0"
           >
             Tutup
           </button>
         </div>
       )}
 
-      {/* Row 1: 4 KPI Stat Cards */}
+      {/* Row 1: 4 Dark Glass Bento KPI Stat Cards */}
       {showKpiCards && (
         <section
           aria-label="Ringkasan statistik properti"
           className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5"
         >
           {/* KPI 1: Total Properti */}
-          <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition">
+          <div className="bg-[#0B1513] rounded-2xl p-5 border border-[#C8A15A]/18 hover:border-[#C8A15A]/38 transition">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-white/55">
                   Total Properti
                 </p>
-                <p className="text-3xl font-serif font-bold text-[#063D36] mt-2">
+                <p className="text-3xl font-sans font-bold text-white mt-2">
                   {totalCount}
                 </p>
               </div>
-              <div className="w-11 h-11 rounded-xl bg-[#063D36]/10 text-[#063D36] flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 rounded-xl bg-white/[0.06] border border-white/12 text-[#C8A15A] flex items-center justify-center shrink-0">
                 <BuildingIcon className="w-5 h-5" />
               </div>
             </div>
-            <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100">
+            <p className="text-xs text-white/50 mt-3 pt-3 border-t border-white/10">
               Total listing aktif di database Supabase
             </p>
           </div>
 
           {/* KPI 2: Tersedia / Dijual */}
-          <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition">
+          <div className="bg-[#0B1513] rounded-2xl p-5 border border-[#C8A15A]/18 hover:border-[#C8A15A]/38 transition">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-white/55">
                   Tersedia / Dijual
                 </p>
-                <p className="text-3xl font-serif font-bold text-emerald-700 mt-2">
+                <p className="text-3xl font-sans font-bold text-emerald-400 mt-2">
                   {availableCount}
                 </p>
               </div>
-              <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-400/25 text-emerald-300 flex items-center justify-center shrink-0">
                 <CheckCircleIcon className="w-5 h-5" />
               </div>
             </div>
-            <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100">
+            <p className="text-xs text-white/50 mt-3 pt-3 border-t border-white/10">
               {soldCount} unit berstatus terjual
             </p>
           </div>
 
           {/* KPI 3: Properti Unggulan */}
-          <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition">
+          <div className="bg-[#0B1513] rounded-2xl p-5 border border-[#C8A15A]/18 hover:border-[#C8A15A]/38 transition">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-white/55">
                   Properti Unggulan
                 </p>
-                <p className="text-3xl font-serif font-bold text-[#B5893C] mt-2">
+                <p className="text-3xl font-sans font-bold text-[#C8A15A] mt-2">
                   {featuredCount}
                 </p>
               </div>
-              <div className="w-11 h-11 rounded-xl bg-[#C8A15A]/15 text-[#B5893C] flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 rounded-xl bg-[#C8A15A]/15 border border-[#C8A15A]/30 text-[#C8A15A] flex items-center justify-center shrink-0">
                 <StarIcon className="w-5 h-5" />
               </div>
             </div>
-            <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100">
+            <p className="text-xs text-white/50 mt-3 pt-3 border-t border-white/10">
               Ditampilkan pada katalog unggulan Homepage
             </p>
           </div>
 
           {/* KPI 4: Rentang Harga */}
-          <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition">
+          <div className="bg-[#0B1513] rounded-2xl p-5 border border-[#C8A15A]/18 hover:border-[#C8A15A]/38 transition">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-white/55">
                   Rentang Harga
                 </p>
-                <p className="text-2xl font-serif font-bold text-[#063D36] mt-2 truncate">
+                <p className="text-xl xl:text-[1.2rem] 2xl:text-2xl font-sans font-bold text-white mt-2 tabular-nums leading-snug">
                   {priceRangeDisplay}
                 </p>
               </div>
-              <div className="w-11 h-11 rounded-xl bg-slate-100 text-[#063D36] flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 rounded-xl bg-white/[0.06] border border-white/12 text-[#C8A15A] flex items-center justify-center shrink-0">
                 <TagIcon className="w-5 h-5" />
               </div>
             </div>
-            <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100 truncate">
+            <p className="text-xs text-white/50 mt-3 pt-3 border-t border-white/10 tabular-nums leading-relaxed">
               {prices.length > 0
                 ? `${formatRupiah(minPrice)} – ${formatRupiah(maxPrice)}`
                 : "Belum ada data harga"}
@@ -653,21 +697,21 @@ export default function AdminDashboard({
         </section>
       )}
 
-      {/* Row 2: Modern Properties Table Card */}
-      <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+      {/* Row 2: Clean Dark Properties Table Card */}
+      <section className="bg-[#0B1513] rounded-2xl border border-white/10 overflow-hidden">
         {/* Table Toolbar */}
-        <div className="p-5 border-b border-slate-200/80 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="p-5 border-b border-white/10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex items-center gap-3">
             <div>
               <div className="flex items-center gap-2.5">
-                <h2 className="text-lg font-serif font-bold text-[#063D36]">
+                <h2 className="font-sans text-lg font-bold text-white">
                   Daftar Properti
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C8A15A]/15 text-[#E6C98F] border border-[#C8A15A]/30">
                   {filteredProperties.length} unit
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-white/50 mt-0.5">
                 Kelola listing properti, status penjualan, dan foto katalog.
               </p>
             </div>
@@ -676,13 +720,13 @@ export default function AdminDashboard({
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             {/* Search Bar */}
             <div className="relative flex-1 sm:w-64">
-              <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <SearchIcon className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="search"
                 placeholder="Cari judul, lokasi, atau tipe..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-10 pl-10 pr-3.5 rounded-xl border border-slate-200 bg-slate-50/70 text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15 transition"
+                className="w-full h-10 pl-10 pr-3.5 rounded-xl border border-white/15 bg-[#070D0C] text-sm text-white placeholder:text-white/35 focus:outline-none focus:border-[#C8A15A] focus:ring-2 focus:ring-[#C8A15A]/20 transition"
               />
             </div>
 
@@ -691,14 +735,20 @@ export default function AdminDashboard({
               aria-label="Filter status properti"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-              className="h-10 px-3.5 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-700 focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15 transition"
+              className="h-10 px-3.5 rounded-xl border border-white/15 bg-[#070D0C] text-sm font-medium text-white focus:outline-none focus:border-[#C8A15A] focus:ring-2 focus:ring-[#C8A15A]/20 transition cursor-pointer"
             >
-              <option value="all">Semua Status ({totalCount})</option>
-              <option value="available">
+              <option value="all" className="bg-[#0A1412] text-white">
+                Semua Status ({totalCount})
+              </option>
+              <option value="available" className="bg-[#0A1412] text-white">
                 Dijual / Tersedia ({availableCount})
               </option>
-              <option value="sold">Terjual ({soldCount})</option>
-              <option value="featured">Unggulan ({featuredCount})</option>
+              <option value="sold" className="bg-[#0A1412] text-white">
+                Terjual ({soldCount})
+              </option>
+              <option value="featured" className="bg-[#0A1412] text-white">
+                Unggulan ({featuredCount})
+              </option>
             </select>
 
             {/* Area Filter */}
@@ -706,11 +756,17 @@ export default function AdminDashboard({
               aria-label="Filter area properti"
               value={areaFilter}
               onChange={(e) => setAreaFilter(e.target.value)}
-              className="h-10 px-3.5 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-700 focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15 transition"
+              className="h-10 px-3.5 rounded-xl border border-white/15 bg-[#070D0C] text-sm font-medium text-white focus:outline-none focus:border-[#C8A15A] focus:ring-2 focus:ring-[#C8A15A]/20 transition cursor-pointer"
             >
-              <option value="all">Semua Area</option>
+              <option value="all" className="bg-[#0A1412] text-white">
+                Semua Area
+              </option>
               {areaOptions.map((area) => (
-                <option key={area} value={area}>
+                <option
+                  key={area}
+                  value={area}
+                  className="bg-[#0A1412] text-white"
+                >
                   {area}
                 </option>
               ))}
@@ -722,7 +778,7 @@ export default function AdminDashboard({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/90 border-b border-slate-200/80 text-slate-500 text-[11px] uppercase tracking-wider">
+              <tr className="bg-[#0F1D1A] border-b border-white/10 text-white/55 text-[11px] uppercase tracking-wider">
                 <th className="py-3.5 px-5 font-semibold">Properti</th>
                 <th className="py-3.5 px-4 font-semibold">Harga &amp; Spek</th>
                 <th className="py-3.5 px-4 font-semibold">Status</th>
@@ -730,19 +786,19 @@ export default function AdminDashboard({
                 <th className="py-3.5 px-5 font-semibold text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
+            <tbody className="divide-y divide-white/8 text-sm">
               {filteredProperties.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
-                    className="py-16 px-6 text-center text-slate-500"
+                    className="py-16 px-6 text-center text-white/55"
                   >
-                    <p className="font-medium text-slate-700">
+                    <p className="font-semibold text-white/85">
                       {properties.length === 0
                         ? "Belum ada data properti di Supabase"
                         : "Tidak ada properti yang cocok dengan filter"}
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-white/50 mt-1">
                       {properties.length === 0
                         ? "Tambahkan properti pertama Anda atau jalankan supabase/seed.sql di SQL Editor."
                         : "Coba ubah kata kunci pencarian atau reset filter status."}
@@ -751,9 +807,9 @@ export default function AdminDashboard({
                       <button
                         type="button"
                         onClick={openCreateModal}
-                        className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#063D36] text-white text-xs font-semibold hover:bg-[#052e29] transition cursor-pointer"
+                        className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#C8A15A] text-[#070D0C] text-xs font-bold hover:bg-[#D9B56F] transition cursor-pointer"
                       >
-                        <PlusIcon className="w-4 h-4 text-[#C8A15A]" />
+                        <PlusIcon className="w-4 h-4" />
                         Tambah Properti Baru
                       </button>
                     )}
@@ -769,12 +825,12 @@ export default function AdminDashboard({
                   return (
                     <tr
                       key={property.id}
-                      className="hover:bg-slate-50/70 transition-colors"
+                      className="hover:bg-white/[0.03] transition-colors"
                     >
                       {/* Thumbnail + Title + Location */}
                       <td className="py-4 px-5">
                         <div className="flex items-center gap-3.5 min-w-[260px]">
-                          <div className="relative w-16 h-12 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200/80">
+                          <div className="relative w-16 h-12 rounded-xl overflow-hidden bg-[#070D0C] shrink-0 border border-white/12">
                             {thumb ? (
                               <Image
                                 src={thumb}
@@ -784,22 +840,22 @@ export default function AdminDashboard({
                                 className="object-cover"
                               />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400 font-semibold">
+                              <div className="w-full h-full flex items-center justify-center text-[10px] text-white/35 font-semibold">
                                 No Img
                               </div>
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-semibold text-slate-900 truncate max-w-[260px]">
+                            <p className="font-semibold text-white truncate max-w-[260px]">
                               {property.title}
                             </p>
-                            <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 truncate max-w-[260px]">
+                            <p className="text-xs text-white/60 flex items-center gap-1 mt-0.5 truncate max-w-[260px]">
                               <MapPinIcon className="w-3.5 h-3.5 text-[#C8A15A] shrink-0" />
                               <span className="truncate">
                                 {property.location}
                               </span>
                             </p>
-                            <span className="inline-block mt-1 text-[11px] font-medium text-slate-400">
+                            <span className="inline-block mt-1 text-[11px] font-medium text-white/40">
                               {property.type || "Rumah"} &bull; /{property.slug}
                             </span>
                           </div>
@@ -808,10 +864,10 @@ export default function AdminDashboard({
 
                       {/* Price & Specs */}
                       <td className="py-4 px-4 whitespace-nowrap">
-                        <p className="font-serif font-bold text-[#063D36]">
+                        <p className="font-sans font-bold text-[#E6C98F]">
                           {formatRupiah(Number(property.price) || 0)}
                         </p>
-                        <p className="text-xs text-slate-500 mt-0.5">
+                        <p className="text-xs text-white/55 mt-0.5">
                           {property.bedrooms ?? 0} KT &bull;{" "}
                           {property.bathrooms ?? 0} KM &bull; LB{" "}
                           {property.building_area ?? 0}m² / LT{" "}
@@ -824,13 +880,13 @@ export default function AdminDashboard({
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                             isSold
-                              ? "bg-amber-50 text-amber-800 ring-1 ring-inset ring-amber-600/20"
-                              : "bg-emerald-50 text-emerald-800 ring-1 ring-inset ring-emerald-600/20"
+                              ? "bg-rose-500/15 text-rose-200 ring-1 ring-inset ring-rose-400/35"
+                              : "bg-emerald-500/15 text-emerald-200 ring-1 ring-inset ring-emerald-400/35"
                           }`}
                         >
                           <span
                             className={`w-1.5 h-1.5 rounded-full ${
-                              isSold ? "bg-amber-500" : "bg-emerald-500"
+                              isSold ? "bg-rose-400" : "bg-emerald-400"
                             }`}
                           />
                           {property.status || "Tersedia"}
@@ -851,8 +907,8 @@ export default function AdminDashboard({
                             }
                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition cursor-pointer disabled:opacity-50 ${
                               property.is_featured
-                                ? "bg-[#C8A15A]/15 text-[#9A722B] ring-1 ring-inset ring-[#C8A15A]/40 hover:bg-[#C8A15A]/25"
-                                : "bg-slate-100 text-slate-500 hover:bg-slate-200/70"
+                                ? "bg-[#C8A15A]/18 text-[#E6C98F] ring-1 ring-inset ring-[#C8A15A]/45 hover:bg-[#C8A15A]/28"
+                                : "bg-white/[0.06] text-white/55 ring-1 ring-inset ring-white/10 hover:bg-white/[0.12] hover:text-white/80"
                             }`}
                           >
                             <StarIcon
@@ -869,8 +925,8 @@ export default function AdminDashboard({
                           <span
                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                               property.is_featured
-                                ? "bg-[#C8A15A]/15 text-[#9A722B] ring-1 ring-inset ring-[#C8A15A]/40"
-                                : "bg-slate-100 text-slate-500"
+                                ? "bg-[#C8A15A]/18 text-[#E6C98F] ring-1 ring-inset ring-[#C8A15A]/45"
+                                : "bg-white/[0.06] text-white/55 ring-1 ring-inset ring-white/10"
                             }`}
                           >
                             <StarIcon
@@ -893,9 +949,9 @@ export default function AdminDashboard({
                             href={getPublicHref(property.slug)}
                             target="_blank"
                             title="Lihat halaman publik"
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-white/15 bg-white/[0.04] text-xs font-semibold text-white/80 hover:border-[#C8A15A]/50 hover:text-[#C8A15A] transition"
                           >
-                            <EyeIcon className="w-3.5 h-3.5 text-slate-500" />
+                            <EyeIcon className="w-3.5 h-3.5" />
                             <span>Lihat</span>
                           </Link>
                           {canManageProperties && (
@@ -904,7 +960,7 @@ export default function AdminDashboard({
                                 type="button"
                                 onClick={() => openEditModal(property)}
                                 title="Edit properti"
-                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#063D36]/10 text-[#063D36] text-xs font-semibold hover:bg-[#063D36]/15 transition cursor-pointer"
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#C8A15A]/15 border border-[#C8A15A]/30 text-[#E6C98F] text-xs font-semibold hover:bg-[#C8A15A]/25 transition cursor-pointer"
                               >
                                 <EditIcon className="w-3.5 h-3.5" />
                                 <span>Edit</span>
@@ -913,7 +969,7 @@ export default function AdminDashboard({
                                 type="button"
                                 onClick={() => setDeleteTarget(property)}
                                 title="Hapus properti"
-                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 text-xs font-semibold hover:bg-red-100 transition cursor-pointer"
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-500/15 border border-rose-400/25 text-rose-200 text-xs font-semibold hover:bg-rose-500/25 transition cursor-pointer"
                               >
                                 <TrashIcon className="w-3.5 h-3.5" />
                                 <span>Hapus</span>
@@ -931,25 +987,29 @@ export default function AdminDashboard({
         </div>
       </section>
 
-      {/* Add / Edit Property Modal */}
+      {/* Add / Edit Property Modal (Escape + backdrop click to close) */}
       {isModalOpen && (
         <div
-          className="fixed inset-0 z-[9999] bg-slate-900/65 backdrop-blur-xs overflow-y-auto"
+          className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-xs overflow-y-auto"
           role="dialog"
           aria-modal="true"
           aria-label={
             editingProperty ? "Edit Properti" : "Tambah Properti Baru"
           }
+          onClick={closeModal}
         >
           <div className="flex min-h-full items-start sm:items-center justify-center px-4 py-8 sm:py-12">
-            <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[calc(100vh-4rem)] sm:max-h-[calc(100vh-6rem)]">
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[#0B1513] w-full max-w-3xl rounded-2xl shadow-2xl border border-[#C8A15A]/25 overflow-hidden flex flex-col max-h-[calc(100vh-4rem)] sm:max-h-[calc(100vh-6rem)]"
+            >
               {/* Sticky Modal Header */}
-              <div className="bg-[#063D36] text-white px-6 py-4 flex items-center justify-between gap-4 shrink-0">
+              <div className="bg-[#0F1D1A] border-b border-white/10 text-white px-6 py-4 flex items-center justify-between gap-4 shrink-0">
                 <div className="min-w-0">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#C8A15A]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C8A15A]">
                     {editingProperty ? "Perbarui Data" : "Listing Baru"}
                   </p>
-                  <h2 className="text-lg sm:text-xl font-serif font-bold mt-0.5 truncate">
+                  <h2 className="font-sans text-lg sm:text-xl font-bold mt-0.5 truncate text-white">
                     {editingProperty
                       ? `Edit: ${editingProperty.title}`
                       : "Tambah Properti Baru"}
@@ -958,7 +1018,7 @@ export default function AdminDashboard({
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center shrink-0 transition cursor-pointer"
+                  className="w-9 h-9 rounded-full bg-white/[0.08] hover:bg-[#C8A15A] border border-white/15 text-white hover:text-[#070D0C] flex items-center justify-center shrink-0 transition cursor-pointer"
                   aria-label="Tutup modal"
                 >
                   <CloseIcon className="w-5 h-5" />
@@ -972,14 +1032,14 @@ export default function AdminDashboard({
                 className="p-6 flex-1 min-h-0 overflow-y-auto space-y-5"
               >
                 {formError && (
-                  <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                  <div className="rounded-xl bg-rose-500/15 border border-rose-400/35 px-4 py-3 text-sm text-rose-100">
                     {formError}
                   </div>
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-white/65 mb-1.5">
                       Judul Properti *
                     </label>
                     <input
@@ -988,12 +1048,12 @@ export default function AdminDashboard({
                       placeholder="Contoh: Cluster Harmoni Tipe 45"
                       value={form.title}
                       onChange={(e) => handleTitleChange(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15"
+                      className={INPUT_CLASS}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-white/65 mb-1.5">
                       Slug URL *
                     </label>
                     <input
@@ -1005,14 +1065,14 @@ export default function AdminDashboard({
                         setSlugTouched(true);
                         setForm((prev) => ({ ...prev, slug: e.target.value }));
                       }}
-                      className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15"
+                      className={INPUT_CLASS}
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-white/65 mb-1.5">
                       Lokasi *
                     </label>
                     <input
@@ -1026,12 +1086,12 @@ export default function AdminDashboard({
                           location: e.target.value,
                         }))
                       }
-                      className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15"
+                      className={INPUT_CLASS}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-white/65 mb-1.5">
                       Harga (Rp) *
                     </label>
                     <input
@@ -1041,14 +1101,14 @@ export default function AdminDashboard({
                       placeholder="500.000.000"
                       value={form.price}
                       onChange={(e) => handlePriceChange(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15"
+                      className={INPUT_CLASS}
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-white/65 mb-1.5">
                       Tipe / Nama Proyek
                     </label>
                     <input
@@ -1058,12 +1118,12 @@ export default function AdminDashboard({
                       onChange={(e) =>
                         setForm((prev) => ({ ...prev, type: e.target.value }))
                       }
-                      className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15"
+                      className={INPUT_CLASS}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-white/65 mb-1.5">
                       Status
                     </label>
                     <select
@@ -1071,18 +1131,30 @@ export default function AdminDashboard({
                       onChange={(e) =>
                         setForm((prev) => ({ ...prev, status: e.target.value }))
                       }
-                      className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15"
+                      className={INPUT_CLASS}
                     >
-                      <option value="DIJUAL">DIJUAL</option>
-                      <option value="Tersedia">Tersedia</option>
-                      <option value="TERJUAL">TERJUAL</option>
+                      <option value="DIJUAL" className="bg-[#0A1412] text-white">
+                        DIJUAL
+                      </option>
+                      <option
+                        value="Tersedia"
+                        className="bg-[#0A1412] text-white"
+                      >
+                        Tersedia
+                      </option>
+                      <option
+                        value="TERJUAL"
+                        className="bg-[#0A1412] text-white"
+                      >
+                        TERJUAL
+                      </option>
                     </select>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-white/65 mb-1.5">
                       Kamar Tidur
                     </label>
                     <input
@@ -1095,11 +1167,11 @@ export default function AdminDashboard({
                           bedrooms: e.target.value,
                         }))
                       }
-                      className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-sm text-slate-900"
+                      className={INPUT_CLASS}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-white/65 mb-1.5">
                       Kamar Mandi
                     </label>
                     <input
@@ -1112,11 +1184,11 @@ export default function AdminDashboard({
                           bathrooms: e.target.value,
                         }))
                       }
-                      className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-sm text-slate-900"
+                      className={INPUT_CLASS}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-white/65 mb-1.5">
                       Luas Tanah (m²)
                     </label>
                     <input
@@ -1129,11 +1201,11 @@ export default function AdminDashboard({
                           land_area: e.target.value,
                         }))
                       }
-                      className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-sm text-slate-900"
+                      className={INPUT_CLASS}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-white/65 mb-1.5">
                       Luas Bangunan (m²)
                     </label>
                     <input
@@ -1146,7 +1218,7 @@ export default function AdminDashboard({
                           building_area: e.target.value,
                         }))
                       }
-                      className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-sm text-slate-900"
+                      className={INPUT_CLASS}
                     />
                   </div>
                 </div>
@@ -1162,16 +1234,16 @@ export default function AdminDashboard({
                           is_featured: e.target.checked,
                         }))
                       }
-                      className="w-4 h-4 accent-[#063D36] rounded"
+                      className="w-4 h-4 accent-[#C8A15A] rounded"
                     />
-                    <span className="text-sm font-semibold text-slate-800">
+                    <span className="text-sm font-medium text-white/85">
                       Tampilkan sebagai Properti Unggulan di Homepage
                     </span>
                   </label>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-white/65 mb-1.5">
                     Deskripsi Properti
                   </label>
                   <textarea
@@ -1184,12 +1256,12 @@ export default function AdminDashboard({
                         description: e.target.value,
                       }))
                     }
-                    className="w-full p-3.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15"
+                    className={TEXTAREA_CLASS}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-white/65 mb-1.5">
                     Spesifikasi Bangunan (1 poin per baris)
                   </label>
                   <textarea
@@ -1204,22 +1276,22 @@ export default function AdminDashboard({
                         featuresText: e.target.value,
                       }))
                     }
-                    className="w-full p-3.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-[#C8A15A] focus:ring-4 focus:ring-[#C8A15A]/15"
+                    className={TEXTAREA_CLASS}
                   />
                 </div>
 
                 {/* Image Upload Section */}
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="rounded-2xl border border-[#C8A15A]/22 bg-[#070D0C] p-4 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-[#063D36]">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#C8A15A]">
                         Galeri Foto (Bucket: property-images)
                       </label>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-xs text-white/50 mt-0.5">
                         Foto pertama otomatis menjadi gambar sampul (thumbnail).
                       </p>
                     </div>
-                    <label className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-[#063D36] text-white text-xs font-bold hover:bg-[#052e29] transition cursor-pointer">
+                    <label className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-[#C8A15A] hover:bg-[#D9B56F] text-[#070D0C] text-xs font-bold transition cursor-pointer shrink-0">
                       {uploadingImages ? "Mengunggah..." : "+ Upload Gambar"}
                       <input
                         type="file"
@@ -1233,18 +1305,18 @@ export default function AdminDashboard({
                   </div>
 
                   {/* Manual URL input */}
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="text"
                       placeholder="Atau tempel URL / path gambar (/images/... atau https://...)"
                       value={manualImageUrl}
                       onChange={(e) => setManualImageUrl(e.target.value)}
-                      className="flex-1 h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs text-slate-800"
+                      className="flex-1 h-10 px-3.5 rounded-xl border border-white/15 bg-[#0B1513] text-xs text-white placeholder:text-white/35 focus:outline-none focus:border-[#C8A15A]"
                     />
                     <button
                       type="button"
                       onClick={handleAddManualImage}
-                      className="px-3.5 h-10 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100 cursor-pointer"
+                      className="px-4 h-10 rounded-xl border border-white/15 bg-white/[0.06] text-xs font-semibold text-white/85 hover:border-[#C8A15A]/50 hover:text-[#C8A15A] transition cursor-pointer shrink-0"
                     >
                       Tambah URL
                     </button>
@@ -1255,7 +1327,7 @@ export default function AdminDashboard({
                       {form.images.map((url, idx) => (
                         <div
                           key={`${url}-${idx}`}
-                          className="relative group rounded-xl overflow-hidden bg-white border border-slate-200 aspect-[4/3]"
+                          className="relative group rounded-xl overflow-hidden bg-[#0B1513] border border-white/15 aspect-[4/3]"
                         >
                           <Image
                             src={url}
@@ -1265,11 +1337,11 @@ export default function AdminDashboard({
                             className="object-cover"
                           />
                           {idx === 0 && (
-                            <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md bg-[#063D36] text-[#C8A15A] text-[10px] font-bold">
+                            <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md bg-[#C8A15A] text-[#070D0C] text-[10px] font-bold">
                               Sampul
                             </span>
                           )}
-                          <div className="absolute inset-x-0 bottom-0 bg-black/65 p-1.5 flex items-center justify-between gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
+                          <div className="absolute inset-x-0 bottom-0 bg-black/75 p-1.5 flex items-center justify-between gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
                             {idx > 0 ? (
                               <button
                                 type="button"
@@ -1286,7 +1358,7 @@ export default function AdminDashboard({
                             <button
                               type="button"
                               onClick={() => handleRemoveImage(idx)}
-                              className="text-[10px] font-bold text-red-300 hover:text-red-200 cursor-pointer"
+                              className="text-[10px] font-bold text-rose-300 hover:text-rose-200 cursor-pointer"
                             >
                               Hapus
                             </button>
@@ -1299,12 +1371,12 @@ export default function AdminDashboard({
               </form>
 
               {/* Sticky Modal Footer */}
-              <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3 shrink-0">
+              <div className="px-6 py-4 bg-[#0F1D1A] border-t border-white/10 flex items-center justify-end gap-3 shrink-0">
                 <button
                   type="button"
                   onClick={closeModal}
                   disabled={saving || uploadingImages}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                  className="px-5 py-2.5 rounded-full border border-white/15 bg-white/[0.04] text-sm font-semibold text-white/80 hover:bg-white/[0.1] transition cursor-pointer"
                 >
                   Batal
                 </button>
@@ -1312,7 +1384,7 @@ export default function AdminDashboard({
                   type="submit"
                   form="property-crud-form"
                   disabled={saving || uploadingImages}
-                  className="px-5 py-2.5 rounded-xl bg-[#063D36] text-white text-sm font-bold hover:bg-[#052e29] disabled:opacity-60 transition shadow-xs cursor-pointer"
+                  className="px-6 py-2.5 rounded-full bg-[#C8A15A] hover:bg-[#D9B56F] text-[#070D0C] text-sm font-bold disabled:opacity-60 transition shadow-[0_8px_22px_rgba(200,161,90,0.25)] cursor-pointer"
                 >
                   {saving
                     ? "Menyimpan..."
@@ -1326,30 +1398,34 @@ export default function AdminDashboard({
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal (Escape + backdrop click to close) */}
       {deleteTarget && (
         <div
-          className="fixed inset-0 z-[9999] bg-slate-900/65 backdrop-blur-xs overflow-y-auto"
+          className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-xs overflow-y-auto"
           role="dialog"
           aria-modal="true"
           aria-label="Konfirmasi hapus properti"
+          onClick={() => !deleting && setDeleteTarget(null)}
         >
           <div className="flex min-h-full items-center justify-center px-4 py-8">
-            <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-200">
-              <h3 className="text-lg font-serif font-bold text-[#063D36]">
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[#0B1513] w-full max-w-md rounded-2xl p-6 shadow-2xl border border-[#C8A15A]/25"
+            >
+              <h3 className="font-sans text-lg font-bold text-white">
                 Hapus Properti?
               </h3>
-              <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+              <p className="text-sm text-white/65 mt-2 leading-relaxed">
                 Anda yakin ingin menghapus{" "}
-                <strong className="text-slate-900">{deleteTarget.title}</strong>
-                ? Tindakan ini tidak dapat dibatalkan.
+                <strong className="text-white">{deleteTarget.title}</strong>?
+                Tindakan ini tidak dapat dibatalkan.
               </p>
               <div className="mt-6 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setDeleteTarget(null)}
                   disabled={deleting}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                  className="px-4 py-2 rounded-full border border-white/15 bg-white/[0.04] text-sm font-semibold text-white/80 hover:bg-white/[0.1] cursor-pointer"
                 >
                   Batal
                 </button>
@@ -1357,7 +1433,7 @@ export default function AdminDashboard({
                   type="button"
                   onClick={handleConfirmDelete}
                   disabled={deleting}
-                  className="px-5 py-2 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 disabled:opacity-60 cursor-pointer"
+                  className="px-5 py-2 rounded-full bg-rose-600 text-white text-sm font-bold hover:bg-rose-500 disabled:opacity-60 cursor-pointer"
                 >
                   {deleting ? "Menghapus..." : "Ya, Hapus"}
                 </button>

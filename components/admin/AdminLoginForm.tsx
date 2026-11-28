@@ -65,25 +65,35 @@ export default function AdminLoginForm({
   };
 
   return (
-    <div className="min-h-screen bg-[#e4e7e5] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-[0_20px_45px_rgba(6,61,54,0.12)] border border-[#063d36]/10 p-8 sm:p-10">
+    <div className="relative min-h-screen overflow-hidden bg-[#070D0C] text-white flex items-center justify-center px-4 py-12">
+      {/* Subtle Ambient Emerald + Nusantara Gold Glow behind Login Card */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[420px] w-[520px] rounded-full bg-gradient-to-r from-[#063D36]/55 via-[#C8A15A]/22 to-[#063D36]/55 blur-[135px]"
+      />
+
+      <div className="relative z-10 w-full max-w-md rounded-2xl bg-[#0B1513]/92 backdrop-blur-xl border border-[#C8A15A]/24 shadow-[0_28px_70px_rgba(0,0,0,0.65)] p-7 sm:p-10">
         <div className="flex flex-col items-center text-center mb-8">
-          <Image
-            src="/images/logo/logo-10.png"
-            alt="Nusantara Indah Property"
-            width={64}
-            height={64}
-            className="mb-4 rounded-xl"
-            priority
-          />
-          <span className="text-xs font-bold tracking-[0.22em] text-[#c8a15a] uppercase mb-2">
+          <div className="mb-4 p-2.5 rounded-2xl bg-white/[0.04] border border-[#C8A15A]/25">
+            <Image
+              src="/images/logo/logo-10.png"
+              alt="Nusantara Indah Property"
+              width={56}
+              height={56}
+              className="rounded-xl"
+              priority
+            />
+          </div>
+          <span className="text-[11px] font-semibold tracking-[0.22em] text-[#C8A15A] uppercase mb-2">
             Panel Admin
           </span>
-          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#063d36]">
-            Masuk Dashboard
+          <h1 className="font-sans text-2xl sm:text-3xl font-bold tracking-tight text-white">
+            Masuk{" "}
+            <span className="font-normal italic text-[#C8A15A]">Dashboard</span>
           </h1>
-          <p className="text-sm text-[#063d36]/75 mt-2">
-            Masuk menggunakan akun admin Supabase Anda untuk mengelola properti.
+          <p className="text-xs sm:text-sm text-white/60 mt-2 leading-relaxed">
+            Masuk menggunakan akun admin untuk mengelola properti, leads, dan
+            pengaturan website.
           </p>
         </div>
 
@@ -91,7 +101,7 @@ export default function AdminLoginForm({
           {error && (
             <div
               role="alert"
-              className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 font-medium"
+              className="rounded-xl bg-rose-500/15 border border-rose-400/35 px-4 py-3 text-xs sm:text-sm text-rose-100 font-medium"
             >
               {error}
             </div>
@@ -100,7 +110,7 @@ export default function AdminLoginForm({
           <div>
             <label
               htmlFor="admin-email"
-              className="block text-xs font-bold uppercase tracking-[0.1em] text-[#063d36] mb-2"
+              className="block text-xs font-medium text-white/75 mb-2"
             >
               Email
             </label>
@@ -112,14 +122,14 @@ export default function AdminLoginForm({
               placeholder="admin@nusantaraindahproperty.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-12 px-4 rounded-2xl border border-[#063d36]/20 bg-white text-[#063d36] text-sm focus:outline-none focus:border-[#c8a15a] focus:ring-4 focus:ring-[#c8a15a]/15 transition"
+              className="w-full h-12 px-4 rounded-xl border border-white/15 bg-[#070D0C] text-white text-sm placeholder:text-white/35 focus:outline-none focus:border-[#C8A15A] focus:ring-2 focus:ring-[#C8A15A]/20 transition"
             />
           </div>
 
           <div>
             <label
               htmlFor="admin-password"
-              className="block text-xs font-bold uppercase tracking-[0.1em] text-[#063d36] mb-2"
+              className="block text-xs font-medium text-white/75 mb-2"
             >
               Password
             </label>
@@ -131,25 +141,26 @@ export default function AdminLoginForm({
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full h-12 px-4 rounded-2xl border border-[#063d36]/20 bg-white text-[#063d36] text-sm focus:outline-none focus:border-[#c8a15a] focus:ring-4 focus:ring-[#c8a15a]/15 transition"
+              className="w-full h-12 px-4 rounded-xl border border-white/15 bg-[#070D0C] text-white text-sm placeholder:text-white/35 focus:outline-none focus:border-[#C8A15A] focus:ring-2 focus:ring-[#C8A15A]/20 transition"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full h-12 rounded-2xl bg-[#063d36] text-white font-semibold text-sm hover:bg-[#052e29] disabled:opacity-60 disabled:cursor-not-allowed transition shadow-[0_10px_20px_rgba(6,61,54,0.18)] cursor-pointer"
+            className="w-full h-12 rounded-full bg-[#C8A15A] hover:bg-[#D9B56F] text-[#070D0C] font-bold text-sm tracking-wide disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_10px_28px_rgba(200,161,90,0.28)] cursor-pointer"
           >
             {loading ? "Memproses..." : "Masuk ke Dashboard"}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-7 pt-5 border-t border-white/10 text-center">
           <Link
             href="/"
-            className="text-xs font-semibold text-[#063d36]/70 hover:text-[#c8a15a] transition"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-white/55 hover:text-[#C8A15A] transition"
           >
-            &larr; Kembali ke Beranda
+            <span aria-hidden="true">&larr;</span>
+            <span>Kembali ke Beranda</span>
           </Link>
         </div>
       </div>

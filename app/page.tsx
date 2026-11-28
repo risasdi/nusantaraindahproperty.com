@@ -1,6 +1,5 @@
 import SplashScreen from "@/components/SplashScreen";
 import HeroSection from "@/components/HeroSection";
-import PropertySearchBar from "@/components/PropertySearchBar";
 import AboutSection from "@/components/AboutSection";
 import FeaturedPropertiesSection from "@/components/FeaturedPropertiesSection";
 import StatsSection from "@/components/StatsSection";
@@ -20,12 +19,14 @@ export default async function HomePage() {
   ]);
 
   return (
-    <>
+    <div className="bg-[#070D0C] text-white">
       <SplashScreen />
       <HeroSection />
-      <PropertySearchBar typeOptions={typeOptions} />
+      <FeaturedPropertiesSection
+        properties={featuredProperties}
+        typeOptions={typeOptions}
+      />
       <AboutSection />
-      <FeaturedPropertiesSection properties={featuredProperties} />
       <StatsSection />
       <ContactSection settings={siteSettings} />
       <SocialSection
@@ -33,6 +34,6 @@ export default async function HomePage() {
         tiktokUrl={siteSettings.tiktok_url}
         facebookUrl={siteSettings.facebook_url}
       />
-    </>
+    </div>
   );
 }

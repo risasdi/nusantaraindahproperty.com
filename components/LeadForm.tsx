@@ -30,12 +30,14 @@ export default function LeadForm({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const safeIdSuffix = source.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
   const defaultHeading = propertyTitle
     ? `Tertarik dengan ${propertyTitle}?`
-    : "Konsultasi & Jadwal Survei Gratis";
+    : "Kirim Pesan Konsultasi";
   const defaultSubheading = propertyTitle
-    ? "Tinggalkan kontak Anda untuk mendapatkan brosur lengkap, simulasi KPR DP 0%, atau menjadwalkan survei lokasi bersama agen kami."
-    : "Isi formulir singkat di bawah ini, tim marketing kami akan segera menghubungi Anda melalui WhatsApp.";
+    ? "Tinggalkan kontak Anda untuk brosur lengkap, simulasi KPR DP 0%, atau jadwal survei lokasi bersama agen kami."
+    : "Isi formulir singkat di bawah ini, tim marketing kami akan segera menghubungi Anda via WhatsApp.";
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -111,24 +113,21 @@ export default function LeadForm({
   };
 
   return (
-    <div className="bg-white rounded-[22px] border border-[#063d36]/12 shadow-[0_16px_36px_rgba(6,61,54,0.08)] overflow-hidden text-left">
-      <div className="bg-[#063d36] px-6 sm:px-8 py-6 text-white">
-        <span className="inline-block text-[11px] font-bold uppercase tracking-[0.22em] text-[#c8a15a] mb-2">
-          Booking &amp; Konsultasi
-        </span>
-        <h3 className="text-xl sm:text-2xl font-serif font-bold text-white leading-snug">
+    <div className="rounded-2xl bg-[#0B1513]/92 backdrop-blur-xl border border-[#C8A15A]/22 shadow-[0_24px_60px_rgba(0,0,0,0.45)] p-6 sm:p-8 text-left">
+      <div className="mb-6">
+        <h3 className="font-sans text-xl sm:text-2xl font-bold text-white leading-snug">
           {heading || defaultHeading}
         </h3>
-        <p className="text-sm text-white/80 mt-2 leading-relaxed">
+        <p className="text-xs sm:text-sm text-white/60 mt-1.5 leading-relaxed">
           {subheading || defaultSubheading}
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {successMessage && (
           <div
             role="status"
-            className="rounded-2xl bg-emerald-50 border border-emerald-200 px-4 py-3.5 text-sm text-emerald-900 font-medium leading-relaxed"
+            className="rounded-xl bg-emerald-500/15 border border-emerald-400/35 px-4 py-3.5 text-sm text-emerald-100 font-medium leading-relaxed"
           >
             {successMessage}
           </div>
@@ -137,7 +136,7 @@ export default function LeadForm({
         {errorMessage && (
           <div
             role="alert"
-            className="rounded-2xl bg-red-50 border border-red-200 px-4 py-3.5 text-sm text-red-700 font-medium"
+            className="rounded-xl bg-rose-500/15 border border-rose-400/35 px-4 py-3.5 text-sm text-rose-100 font-medium"
           >
             {errorMessage}
           </div>
@@ -146,32 +145,32 @@ export default function LeadForm({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label
-              htmlFor={`lead-name-${source}`}
-              className="block text-xs font-bold uppercase tracking-[0.1em] text-[#063d36] mb-2"
+              htmlFor={`lead-name-${safeIdSuffix}`}
+              className="block text-xs font-medium text-white/75 mb-2"
             >
-              Nama Lengkap <span className="text-[#c8a15a]">*</span>
+              Nama Lengkap <span className="text-[#C8A15A]">*</span>
             </label>
             <input
-              id={`lead-name-${source}`}
+              id={`lead-name-${safeIdSuffix}`}
               type="text"
               required
               autoComplete="name"
               placeholder="Contoh: Budi Santoso"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full h-12 px-4 rounded-2xl border border-[#063d36]/20 bg-white text-[#063d36] text-sm placeholder:text-[#063d36]/40 focus:outline-none focus:border-[#c8a15a] focus:ring-4 focus:ring-[#c8a15a]/15 transition"
+              className="w-full h-12 px-4 rounded-xl border border-white/14 bg-white/[0.05] text-white text-sm placeholder:text-white/35 focus:outline-none focus:border-[#C8A15A] focus:bg-white/[0.08] focus:ring-2 focus:ring-[#C8A15A]/20 transition"
             />
           </div>
 
           <div>
             <label
-              htmlFor={`lead-whatsapp-${source}`}
-              className="block text-xs font-bold uppercase tracking-[0.1em] text-[#063d36] mb-2"
+              htmlFor={`lead-whatsapp-${safeIdSuffix}`}
+              className="block text-xs font-medium text-white/75 mb-2"
             >
-              Nomor WhatsApp <span className="text-[#c8a15a]">*</span>
+              Nomor WhatsApp <span className="text-[#C8A15A]">*</span>
             </label>
             <input
-              id={`lead-whatsapp-${source}`}
+              id={`lead-whatsapp-${safeIdSuffix}`}
               type="tel"
               required
               autoComplete="tel"
@@ -179,40 +178,38 @@ export default function LeadForm({
               placeholder="Contoh: 081234567890"
               value={whatsapp}
               onChange={(e) => setWhatsapp(e.target.value)}
-              className="w-full h-12 px-4 rounded-2xl border border-[#063d36]/20 bg-white text-[#063d36] text-sm placeholder:text-[#063d36]/40 focus:outline-none focus:border-[#c8a15a] focus:ring-4 focus:ring-[#c8a15a]/15 transition"
+              className="w-full h-12 px-4 rounded-xl border border-white/14 bg-white/[0.05] text-white text-sm placeholder:text-white/35 focus:outline-none focus:border-[#C8A15A] focus:bg-white/[0.08] focus:ring-2 focus:ring-[#C8A15A]/20 transition"
             />
           </div>
         </div>
 
         <div>
           <label
-            htmlFor={`lead-message-${source}`}
-            className="block text-xs font-bold uppercase tracking-[0.1em] text-[#063d36] mb-2"
+            htmlFor={`lead-message-${safeIdSuffix}`}
+            className="block text-xs font-medium text-white/75 mb-2"
           >
             Pesan / Rencana Jadwal Survei{" "}
-            <span className="text-[#063d36]/45 font-normal normal-case tracking-normal">
-              (opsional)
-            </span>
+            <span className="text-white/40 font-normal">(opsional)</span>
           </label>
           <textarea
-            id={`lead-message-${source}`}
-            rows={3}
-            placeholder="Contoh: Saya ingin survei lokasi hari Sabtu pukul 10.00 WIB dan minta info cicilan KPR DP 0%."
+            id={`lead-message-${safeIdSuffix}`}
+            rows={4}
+            placeholder="Ceritakan tipe rumah yang dicari atau rencana jadwal survei Anda..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="w-full px-4 py-3 rounded-2xl border border-[#063d36]/20 bg-white text-[#063d36] text-sm placeholder:text-[#063d36]/40 focus:outline-none focus:border-[#c8a15a] focus:ring-4 focus:ring-[#c8a15a]/15 transition resize-y"
+            className="w-full px-4 py-3 rounded-xl border border-white/14 bg-white/[0.05] text-white text-sm placeholder:text-white/35 focus:outline-none focus:border-[#C8A15A] focus:bg-white/[0.08] focus:ring-2 focus:ring-[#C8A15A]/20 transition resize-y"
           />
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
-          <p className="text-xs text-[#063d36]/60">
-            Data Anda terjaga kerahasiaannya dan hanya digunakan untuk layanan
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-1">
+          <p className="text-xs text-white/45 leading-relaxed">
+            Data Anda dijaga kerahasiaannya dan hanya digunakan untuk layanan
             konsultasi properti.
           </p>
           <button
             type="submit"
             disabled={submitting}
-            className="shrink-0 inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-[#c8a15a] text-[#063d36] font-bold text-sm hover:brightness-105 disabled:opacity-60 disabled:cursor-not-allowed transition shadow-[0_12px_24px_rgba(200,161,90,0.3)] cursor-pointer"
+            className="shrink-0 inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-[#C8A15A] hover:bg-[#D9B56F] text-[#070D0C] font-bold text-xs sm:text-sm tracking-wide disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_10px_28px_rgba(200,161,90,0.28)] cursor-pointer"
           >
             {submitting ? "Mengirim..." : "Kirim Permintaan"}
           </button>

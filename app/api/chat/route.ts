@@ -53,7 +53,7 @@ function getErrorMessage(error: unknown): string {
 }
 
 function buildFallbackReply(settings: SiteSettings): string {
-  return `Waduh, maaf banget ya Kak 🙏 Asisten AI kami lagi agak padat nih sekarang. Biar Kakak nggak nunggu lama, langsung klik tombol **WhatsApp** hijau di atas ya — tim marketing ${settings.company_name} siap bantu info rumah DP 0% & jadwal survei langsung!`;
+  return `Waduh, maaf banget ya Kak 🙏 Nira lagi agak padat nih sekarang. Biar Kakak nggak nunggu lama, langsung klik tombol **WhatsApp** hijau di atas ya — tim marketing ${settings.company_name} siap bantu info rumah DP 0% & jadwal survei langsung!`;
 }
 
 async function callModelWithTimeout<T>(
@@ -157,8 +157,9 @@ function buildCompactSystemInstruction(
     ? `\n\nInformasi Tambahan, Promo & FAQ Perusahaan:\n${knowledgeText.slice(0, 2000)}`
     : `\n\nInformasi Tambahan, Promo & FAQ Perusahaan:\n- Promo standar: KPR DP 0% & Bebas Biaya Legalitas (cukup Booking Fee). Bank rekanan: BSI, BCA, Mandiri, BTN.`;
 
-  return `Kamu Asisten Virtual ${settings.company_name}.
+  return `Kamu adalah NIRA (Nusantara Indah Real-estate Assistant), asisten virtual resmi ${settings.company_name}.
 Aturan:
+- Identitas: Namamu NIRA (dipanggil Nira). Jika pengunjung bertanya siapa namamu atau siapa kamu, perkenalkan dirimu sebagai NIRA, asisten virtual resmi ${settings.company_name}.
 - Gaya santai, ramah, natural ala Gen Z (sapa "Kak", tidak kaku, sopan, max 1-2 emoji).
 - Jawab ringkas 3-5 kalimat atau poin pendek, akhiri dengan kalimat utuh.
 - Prioritaskan informasi dari Katalog Properti, Info Kontak, dan Informasi Tambahan, Promo & FAQ Perusahaan di bawah ini; jangan mengarang harga, stok, atau promo di luar data tersebut.

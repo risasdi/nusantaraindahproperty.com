@@ -3,28 +3,64 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
+const SPLASH_SESSION_KEY = "nip_splash_seen_v1";
+
+type SplashStage = "idle" | "showing" | "animating" | "fading" | "done";
+
 export default function SplashScreen() {
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [isFadingOut, setIsFadingOut] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
+  const [stage, setStage] = useState<SplashStage>("idle");
 
   useEffect(() => {
+    const hasHash = Boolean(window.location.hash && window.location.hash !== "#");
+
+    let alreadySeen = false;
+    try {
+      alreadySeen = window.sessionStorage.getItem(SPLASH_SESSION_KEY) === "1";
+    } catch {
+      alreadySeen = false;
+    }
+
+    // Never show splash if already seen this session or if arriving via a URL hash (e.g. /#catalog, /#contact)
+    if (hasHash || alreadySeen) {
+      document.body.classList.remove("splash-active");
+      if (hasHash) {
+        const targetId = window.location.hash.slice(1);
+        const targetEl = targetId ? document.getElementById(targetId) : null;
+        if (targetEl) {
+          requestAnimationFrame(() => {
+            targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+        }
+      }
+      return;
+    }
+
     document.body.classList.add("splash-active");
 
+    const showFrame = window.requestAnimationFrame(() => {
+      setStage("showing");
+    });
+
     const animateTimer = window.setTimeout(() => {
-      setIsAnimating(true);
-    }, 500);
+      try {
+        window.sessionStorage.setItem(SPLASH_SESSION_KEY, "1");
+      } catch {
+        // Ignore storage errors in private browsing modes
+      }
+      setStage("animating");
+    }, 350);
 
     const fadeOutTimer = window.setTimeout(() => {
-      setIsFadingOut(true);
-    }, 3500);
+      setStage("fading");
+      document.body.classList.remove("splash-active");
+    }, 2350);
 
     const hideTimer = window.setTimeout(() => {
-      setIsVisible(false);
-      document.body.classList.remove("splash-active");
-    }, 4500);
+      setStage("done");
+    }, 3150);
 
     return () => {
+      window.cancelAnimationFrame(showFrame);
       window.clearTimeout(animateTimer);
       window.clearTimeout(fadeOutTimer);
       window.clearTimeout(hideTimer);
@@ -32,12 +68,19 @@ export default function SplashScreen() {
     };
   }, []);
 
-  if (!isVisible) return null;
+  if (stage === "idle" || stage === "done") return null;
+
+  const isAnimating = stage === "animating" || stage === "fading";
+  const isFadingOut = stage === "fading";
 
   return (
     <div
       id="splash-screen"
-      className={`${isAnimating ? "animate" : ""}${isFadingOut ? " pointer-events-none" : ""}`.trim() || undefined}
+      aria-hidden="true"
+      className={
+        `${isAnimating ? "animate" : ""}${isFadingOut ? " pointer-events-none" : ""}`.trim() ||
+        undefined
+      }
       style={{ opacity: isFadingOut ? 0 : 1 }}
     >
       <div className="splash-logo-container">

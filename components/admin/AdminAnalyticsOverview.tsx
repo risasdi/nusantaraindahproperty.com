@@ -204,28 +204,31 @@ export default function AdminAnalyticsOverview({
       {/* Section Header + Date Range Filter */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h2 className="text-lg sm:text-xl font-serif font-bold text-[#063D36]">
-            Analitik &amp; Trafik Pengunjung
+          <h2 className="font-sans text-lg sm:text-xl font-bold text-white">
+            Analitik &amp;{" "}
+            <span className="font-normal italic text-[#C8A15A]">
+              Trafik Pengunjung
+            </span>
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-white/55 mt-0.5">
             Pelacakan first-party pengunjung publik dalam {rangeDays} hari
             terakhir (WIB).
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
           <div
             role="group"
             aria-label="Filter rentang waktu analitik"
-            className="inline-flex rounded-xl bg-white border border-slate-200/80 p-1 shadow-xs"
+            className="inline-flex rounded-full bg-[#0B1513] border border-white/12 p-1"
           >
             <button
               type="button"
               onClick={() => setRangeDays(7)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer ${
                 rangeDays === 7
-                  ? "bg-[#063D36] text-white shadow-xs"
-                  : "text-slate-600 hover:text-[#063D36]"
+                  ? "bg-[#C8A15A] text-[#070D0C]"
+                  : "text-white/65 hover:text-white"
               }`}
             >
               7 Hari Terakhir
@@ -233,10 +236,10 @@ export default function AdminAnalyticsOverview({
             <button
               type="button"
               onClick={() => setRangeDays(30)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer ${
                 rangeDays === 30
-                  ? "bg-[#063D36] text-white shadow-xs"
-                  : "text-slate-600 hover:text-[#063D36]"
+                  ? "bg-[#C8A15A] text-[#070D0C]"
+                  : "text-white/65 hover:text-white"
               }`}
             >
               30 Hari Terakhir
@@ -247,7 +250,7 @@ export default function AdminAnalyticsOverview({
             type="button"
             onClick={handleRefresh}
             disabled={refreshing}
-            className="h-9 px-3 rounded-xl border border-slate-200/80 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition shadow-xs cursor-pointer"
+            className="h-9 px-4 rounded-full border border-white/15 bg-[#0B1513] text-xs font-semibold text-white/80 hover:border-[#C8A15A]/55 hover:text-[#C8A15A] disabled:opacity-50 transition cursor-pointer"
           >
             {refreshing ? "Memuat..." : "Refresh"}
           </button>
@@ -257,93 +260,93 @@ export default function AdminAnalyticsOverview({
       {errorMsg && (
         <div
           role="alert"
-          className="rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 text-xs sm:text-sm text-amber-900"
+          className="rounded-2xl bg-amber-500/12 border border-amber-400/35 px-4 py-3 text-xs sm:text-sm text-amber-100"
         >
           Catatan analitik: {errorMsg}
         </div>
       )}
 
-      {/* Analytics KPI Row */}
+      {/* Analytics KPI Row (Dark Glass Bento) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
         {/* KPI 1: Total Kunjungan (PageView) */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition">
+        <div className="bg-[#0B1513] rounded-2xl p-5 border border-[#C8A15A]/18 hover:border-[#C8A15A]/38 transition">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-white/55">
                 Total Kunjungan
               </p>
-              <p className="text-3xl font-serif font-bold text-[#063D36] mt-2">
+              <p className="text-3xl font-sans font-bold text-white mt-2">
                 {totals.PageView}
               </p>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-[#063D36]/10 text-[#063D36] flex items-center justify-center shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-400/25 text-emerald-300 flex items-center justify-center shrink-0">
               <UsersIcon className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100">
-            Event <span className="font-semibold text-slate-700">PageView</span>{" "}
+          <p className="text-xs text-white/50 mt-3 pt-3 border-t border-white/10">
+            Event <span className="font-semibold text-white/80">PageView</span>{" "}
             ({rangeDays} hari terakhir)
           </p>
         </div>
 
         {/* KPI 2: Lihat Properti (ViewContent) */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition">
+        <div className="bg-[#0B1513] rounded-2xl p-5 border border-[#C8A15A]/18 hover:border-[#C8A15A]/38 transition">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-white/55">
                 Lihat Properti
               </p>
-              <p className="text-3xl font-serif font-bold text-[#B5893C] mt-2">
+              <p className="text-3xl font-sans font-bold text-[#C8A15A] mt-2">
                 {totals.ViewContent}
               </p>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-[#C8A15A]/15 text-[#B5893C] flex items-center justify-center shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-[#C8A15A]/15 border border-[#C8A15A]/30 text-[#C8A15A] flex items-center justify-center shrink-0">
               <EyeIcon className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100">
+          <p className="text-xs text-white/50 mt-3 pt-3 border-t border-white/10">
             Event{" "}
-            <span className="font-semibold text-slate-700">ViewContent</span>{" "}
+            <span className="font-semibold text-white/80">ViewContent</span>{" "}
             halaman detail
           </p>
         </div>
 
         {/* KPI 3: Klik WhatsApp (Contact) */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition">
+        <div className="bg-[#0B1513] rounded-2xl p-5 border border-[#C8A15A]/18 hover:border-[#C8A15A]/38 transition">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-white/55">
                 Klik WhatsApp
               </p>
-              <p className="text-3xl font-serif font-bold text-[#16A34A] mt-2">
+              <p className="text-3xl font-sans font-bold text-emerald-400 mt-2">
                 {totals.Contact}
               </p>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-emerald-50 text-[#16A34A] flex items-center justify-center shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-400/25 text-emerald-400 flex items-center justify-center shrink-0">
               <WhatsAppIcon className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100">
+          <p className="text-xs text-white/50 mt-3 pt-3 border-t border-white/10">
             Rasio klik {waRate}% dari kunjungan
           </p>
         </div>
 
         {/* KPI 4: Leads Masuk (Lead) */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition">
+        <div className="bg-[#0B1513] rounded-2xl p-5 border border-[#C8A15A]/18 hover:border-[#C8A15A]/38 transition">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-white/55">
                 Leads Masuk
               </p>
-              <p className="text-3xl font-serif font-bold text-sky-700 mt-2">
+              <p className="text-3xl font-sans font-bold text-sky-400 mt-2">
                 {totals.Lead}
               </p>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-sky-500/15 border border-sky-400/25 text-sky-300 flex items-center justify-center shrink-0">
               <SparklesIcon className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100">
+          <p className="text-xs text-white/50 mt-3 pt-3 border-t border-white/10">
             Konversi form {leadRate}% dari kunjungan
           </p>
         </div>
@@ -352,13 +355,13 @@ export default function AdminAnalyticsOverview({
       {/* Charts Grid: Daily Trend + Top 5 Viewed Properties */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         {/* Daily Trend AreaChart */}
-        <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6">
+        <div className="xl:col-span-2 bg-[#0B1513] rounded-2xl border border-white/10 p-5 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
             <div>
-              <h3 className="text-base font-serif font-bold text-[#063D36]">
+              <h3 className="font-sans text-base font-bold text-white">
                 Tren Harian Pengunjung &amp; Konversi
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-white/50 mt-0.5">
                 Perbandingan PageView, Klik WhatsApp (Contact), dan Leads Masuk
                 per hari.
               </p>
@@ -373,15 +376,15 @@ export default function AdminAnalyticsOverview({
               >
                 <defs>
                   <linearGradient id="gradPageView" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#063D36" stopOpacity={0.28} />
-                    <stop offset="95%" stopColor="#063D36" stopOpacity={0.02} />
+                    <stop offset="5%" stopColor="#34D399" stopOpacity={0.32} />
+                    <stop offset="95%" stopColor="#34D399" stopOpacity={0.02} />
                   </linearGradient>
                   <linearGradient id="gradContact" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#16A34A" stopOpacity={0.26} />
-                    <stop offset="95%" stopColor="#16A34A" stopOpacity={0.02} />
+                    <stop offset="5%" stopColor="#38BDF8" stopOpacity={0.28} />
+                    <stop offset="95%" stopColor="#38BDF8" stopOpacity={0.02} />
                   </linearGradient>
                   <linearGradient id="gradLead" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#C8A15A" stopOpacity={0.35} />
+                    <stop offset="5%" stopColor="#C8A15A" stopOpacity={0.38} />
                     <stop offset="95%" stopColor="#C8A15A" stopOpacity={0.03} />
                   </linearGradient>
                 </defs>
@@ -389,32 +392,34 @@ export default function AdminAnalyticsOverview({
                 <CartesianGrid
                   strokeDasharray="3 3"
                   vertical={false}
-                  stroke="#E2E8F0"
+                  stroke="rgba(255,255,255,0.08)"
                 />
                 <XAxis
                   dataKey="label"
-                  tick={{ fill: "#64748B", fontSize: 11 }}
+                  tick={{ fill: "#94A3B8", fontSize: 11 }}
                   tickLine={false}
-                  axisLine={{ stroke: "#E2E8F0" }}
+                  axisLine={{ stroke: "rgba(255,255,255,0.12)" }}
                   minTickGap={rangeDays === 30 ? 22 : 8}
                 />
                 <YAxis
                   allowDecimals={false}
-                  tick={{ fill: "#64748B", fontSize: 11 }}
+                  tick={{ fill: "#94A3B8", fontSize: 11 }}
                   tickLine={false}
                   axisLine={false}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#FFFFFF",
-                    borderColor: "#E2E8F0",
+                    backgroundColor: "#0A1412",
+                    borderColor: "rgba(200, 161, 90, 0.35)",
                     borderRadius: "12px",
-                    boxShadow: "0 10px 25px rgba(6, 61, 54, 0.12)",
+                    boxShadow: "0 14px 30px rgba(0, 0, 0, 0.5)",
                     fontSize: "12px",
+                    color: "#F8FAFC",
                   }}
+                  itemStyle={{ color: "#E2E8F0" }}
                   labelStyle={{
                     fontWeight: 700,
-                    color: "#063D36",
+                    color: "#C8A15A",
                     marginBottom: "4px",
                   }}
                 />
@@ -422,13 +427,13 @@ export default function AdminAnalyticsOverview({
                   verticalAlign="top"
                   height={32}
                   iconType="circle"
-                  wrapperStyle={{ fontSize: "12px" }}
+                  wrapperStyle={{ fontSize: "12px", color: "#CBD5E1" }}
                 />
                 <Area
                   type="monotone"
                   dataKey="PageView"
                   name="Kunjungan (PageView)"
-                  stroke="#063D36"
+                  stroke="#34D399"
                   strokeWidth={2.4}
                   fill="url(#gradPageView)"
                   activeDot={{ r: 5 }}
@@ -437,7 +442,7 @@ export default function AdminAnalyticsOverview({
                   type="monotone"
                   dataKey="Contact"
                   name="Klik WA (Contact)"
-                  stroke="#16A34A"
+                  stroke="#38BDF8"
                   strokeWidth={2.2}
                   fill="url(#gradContact)"
                   activeDot={{ r: 5 }}
@@ -457,28 +462,28 @@ export default function AdminAnalyticsOverview({
         </div>
 
         {/* Top 5 Most Viewed Properties */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 flex flex-col">
+        <div className="bg-[#0B1513] rounded-2xl border border-white/10 p-5 sm:p-6 flex flex-col">
           <div className="flex items-start justify-between gap-2 mb-5">
             <div>
-              <h3 className="text-base font-serif font-bold text-[#063D36]">
+              <h3 className="font-sans text-base font-bold text-white">
                 Top 5 Properti Terpopuler
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-white/50 mt-0.5">
                 Berdasarkan event ViewContent ({rangeDays} hari terakhir).
               </p>
             </div>
-            <span className="w-9 h-9 rounded-xl bg-[#C8A15A]/15 text-[#B5893C] flex items-center justify-center shrink-0">
+            <span className="w-9 h-9 rounded-xl bg-[#C8A15A]/15 border border-[#C8A15A]/30 text-[#C8A15A] flex items-center justify-center shrink-0">
               <AwardIcon className="w-4 h-4" />
             </span>
           </div>
 
           {topProperties.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-center py-10 px-4 rounded-xl bg-slate-50 border border-dashed border-slate-200">
-              <EyeIcon className="w-7 h-7 text-slate-300 mb-2" />
-              <p className="text-sm font-semibold text-slate-600">
+            <div className="flex-1 flex flex-col items-center justify-center text-center py-10 px-4 rounded-xl bg-white/[0.02] border border-dashed border-white/14">
+              <EyeIcon className="w-7 h-7 text-white/25 mb-2" />
+              <p className="text-sm font-semibold text-white/75">
                 Belum ada data tayangan properti
               </p>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-white/45 mt-1">
                 Kunjungan ke halaman detail properti akan otomatis tercatat di
                 sini.
               </p>
@@ -498,25 +503,25 @@ export default function AdminAnalyticsOverview({
                         <span
                           className={`w-5 h-5 rounded-md text-[10px] font-bold flex items-center justify-center shrink-0 ${
                             idx === 0
-                              ? "bg-[#C8A15A] text-[#063D36]"
-                              : "bg-[#063D36]/10 text-[#063D36]"
+                              ? "bg-[#C8A15A] text-[#070D0C]"
+                              : "bg-white/10 text-white/80"
                           }`}
                         >
                           {idx + 1}
                         </span>
                         <span
-                          className="font-semibold text-slate-800 truncate"
+                          className="font-semibold text-white/90 truncate"
                           title={item.title}
                         >
                           {item.title}
                         </span>
                       </div>
-                      <span className="font-bold text-[#063D36] whitespace-nowrap shrink-0">
+                      <span className="font-bold text-[#C8A15A] whitespace-nowrap shrink-0">
                         {item.views}x
                       </span>
                     </div>
 
-                    <div className="w-full h-2.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div className="w-full h-2 rounded-full bg-white/[0.08] overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-500"
                         style={{
@@ -524,7 +529,7 @@ export default function AdminAnalyticsOverview({
                           background:
                             idx === 0
                               ? "linear-gradient(90deg, #063D36 0%, #C8A15A 100%)"
-                              : "#063D36",
+                              : "#34D399",
                         }}
                       />
                     </div>
